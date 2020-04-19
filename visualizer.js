@@ -17,17 +17,23 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 
 	// Acceleration indicator
 	if(accel != null && !accel.isZero()) {
+		const minArrowLen = this.s/8;
+		const maxArrowLen = this.s/2 * 0.9;
+		let arrowLen = accelLen;
+		arrowLen = Math.min(arrowLen, maxArrowLen);
+		arrowLen = Math.max(arrowLen, minArrowLen);
+
 		this._accelArrow.copy(accel)
 			.normalize()
-			.multiplyScalar(this.s/2 * 0.9)
+			.multiplyScalar(arrowLen)
 			.addComponents(this.center.x, -this.center.y);
 		this._accelArrow.y *= -1;
 
 		ctx.save();
 		ctx.strokeStyle = "green";
 		ctx.fillStyle = "green"
-		ctx.lineWidth = 3;
-		drawArrowhead(ctx, this.center, this._accelArrow, 10);
+		ctx.lineWidth = 1;
+		drawArrowhead(ctx, this.center, this._accelArrow, 5);
 		ctx.beginPath();
 		ctx.moveTo(this.center.x, this.center.y);
 		ctx.lineTo(this._accelArrow.x, this._accelArrow.y);
@@ -49,6 +55,15 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 
 	// Frame
 	ctx.strokeRect(this.x, this.y, this.s, this.s);
+
+	// Position and speed
+	const lowerEdge = this.y + this.s;
+	const leftEdge = this.x + 5;
+	const prec = 2;
+	drawLabel(ctx, "pos: " + this.model.particle.pos.x.toFixed(prec) + "," + this.model.particle.pos.y.toFixed(prec),
+		leftEdge, lowerEdge - 2 * 12, "left");
+	drawLabel(ctx, "vel: " + this.model.particle.vel.x.toFixed(prec) + "," + this.model.particle.vel.y.toFixed(prec),
+		leftEdge, lowerEdge - 1 * 12, "left");
 
 	// Particle
 	ctx.fillStyle = "red";

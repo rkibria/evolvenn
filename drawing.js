@@ -46,10 +46,10 @@ function drawArrowhead(context, from, to, radius) {
 	context.fill();
 }
 
-function drawLabel(ctx, txt, x, y) {
+function drawLabel(ctx, txt, x, y, textAlign="center") {
 	ctx.save();
 	ctx.font = "12px sans-serif";
-	ctx.textAlign = "center";
+	ctx.textAlign = textAlign;
 	ctx.setLineDash([]);
 	ctx.strokeStyle = 'black';
 	ctx.fillStyle = 'white';
