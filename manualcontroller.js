@@ -1,7 +1,6 @@
 
-function ManualController(visualizer, model, mouse, mouseclick) {
+function ManualController(visualizer, mouse, mouseclick) {
 	this.visualizer = visualizer;
-	this.model = model;
 	this.mouse = mouse;
 	this.mouseclick = mouseclick;
 
@@ -17,7 +16,6 @@ ManualController.prototype.run = function(ctx) {
 	else {
 		this.accel.clear();
 	}
-	this.model.run(this.accel);
-
+	this.visualizer.model.run(this.accel);
 	this.visualizer.draw(ctx);
 };

@@ -39,10 +39,8 @@ const canvasW = canvas.scrollWidth, canvasH = canvas.scrollHeight;
 const mouse = captureMouse(canvas);
 const mouseclick = captureMouseclick(canvas);
 
-const g_model = new WorldModel();
 const g_manualcontroller = new ManualController(
-	new Visualizer(g_model, 10, 10, 780),
-	g_model,
+	new Visualizer(new WorldModel(), 10, 10, 780),
 	mouse, mouseclick);
 
 window.onload = function() {
