@@ -71,6 +71,10 @@ Vec2.prototype.equals = function(v) {
 	return this.x == v.x && this.y == v.y;
 };
 
+Vec2.prototype.isZero = function() {
+	return this.x == 0 && this.y == 0;
+};
+
 Vec2.prototype.length = function() {
 	return Math.sqrt(this.x * this.x + this.y * this.y);
 };

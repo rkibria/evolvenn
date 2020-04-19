@@ -6,10 +6,32 @@ function Visualizer(model, x, y, s) {
 	this.s = s;
 
 	this.center = new Vec2(this.x + this.s/2, this.y + this.s/2);
+
+	this._accelArrow = new Vec2();
 }
 
 Visualizer.prototype.draw = function(ctx, accel=null) {
 	ctx.save();
+
+	// Acceleration indicator
+	if(accel != null && !accel.isZero()) {
+		this._accelArrow.copy(accel)
+			.normalize()
+			.multiplyScalar(this.s/4)
+			.addComponents(this.center.x, -this.center.y);
+		this._accelArrow.y *= -1;
+
+		ctx.save();
+		ctx.strokeStyle = "green";
+		ctx.fillStyle = "green"
+		ctx.lineWidth = 3;
+		drawArrowhead(ctx, this.center, this._accelArrow, 10);
+		ctx.beginPath();
+		ctx.moveTo(this.center.x, this.center.y);
+		ctx.lineTo(this._accelArrow.x, this._accelArrow.y);
+		ctx.stroke();
+		ctx.restore();
+	}
 
 	// Center cross
 	ctx.strokeStyle = "darkgrey";
@@ -24,10 +46,6 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 
 	// Frame
 	ctx.strokeRect(this.x, this.y, this.s, this.s);
-
-	// Acceleration indicator
-	if(accel != null) {
-	}
 
 	// Particle
 	ctx.fillStyle = "red";

@@ -8,6 +8,7 @@ function ManualController(visualizer, mouse, mouseclick) {
 }
 
 ManualController.prototype.run = function(ctx) {
+	// Set acceleration
 	if(this.mouseclick.down) {
 		this.accel.set(this.mouse.x, this.visualizer.y + this.visualizer.s/2);
 		this.accel.subComps(this.visualizer.x + this.visualizer.s/2, this.mouse.y);
@@ -16,6 +17,11 @@ ManualController.prototype.run = function(ctx) {
 	else {
 		this.accel.clear();
 	}
+
+	// Control indicators
+	ctx.save();
+	ctx.restore();
+
 	this.visualizer.model.run(this.accel);
-	this.visualizer.draw(ctx);
+	this.visualizer.draw(ctx, this.accel);
 };
