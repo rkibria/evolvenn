@@ -45,3 +45,19 @@ function drawArrowhead(context, from, to, radius) {
 
 	context.fill();
 }
+
+function drawLabel(ctx, txt, x, y) {
+	ctx.save();
+	ctx.font = "12px sans-serif";
+	ctx.textAlign = "center";
+	ctx.setLineDash([]);
+	ctx.strokeStyle = 'black';
+	ctx.fillStyle = 'white';
+	ctx.miterLimit = 2;
+	ctx.lineJoin = 'circle';
+	ctx.lineWidth = 3;
+	ctx.strokeText(txt, x, y);
+	ctx.lineWidth = 1;
+	ctx.fillText(txt, x, y);
+	ctx.restore();
+}

@@ -11,13 +11,15 @@ function Visualizer(model, x, y, s) {
 }
 
 Visualizer.prototype.draw = function(ctx, accel=null) {
+	const accelLen = accel.length();
+
 	ctx.save();
 
 	// Acceleration indicator
 	if(accel != null && !accel.isZero()) {
 		this._accelArrow.copy(accel)
 			.normalize()
-			.multiplyScalar(this.s/4)
+			.multiplyScalar(this.s/2 * 0.9)
 			.addComponents(this.center.x, -this.center.y);
 		this._accelArrow.y *= -1;
 
@@ -31,6 +33,7 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 		ctx.lineTo(this._accelArrow.x, this._accelArrow.y);
 		ctx.stroke();
 		ctx.restore();
+		drawLabel(ctx, accelLen.toFixed(3), this._accelArrow.x, this._accelArrow.y);
 	}
 
 	// Center cross
