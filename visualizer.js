@@ -61,7 +61,7 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 	// Position and speed
 	const lowerEdge = this.y + this.s;
 	const leftEdge = this.x + 5;
-	const lineHeight = 13;
+	const lineHeight = 14;
 	const prec = 2;
 	drawLabel(ctx, "pos: " + this.model.particle.pos.x.toFixed(prec) + "," + this.model.particle.pos.y.toFixed(prec),
 		leftEdge, lowerEdge - 2 * lineHeight, "left");
@@ -70,14 +70,17 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 
 	// Particle
 	let scale = 1;
-	let dx = Math.trunc(this.model.particle.pos.x);
-	let dy = Math.trunc(this.model.particle.pos.y);
+	let dx = this.model.particle.pos.x;
+	let dy = this.model.particle.pos.y;
 	const edge = this.s / 2;
 	while(Math.abs(dx) > edge || Math.abs(dy) > edge) {
 		scale *= 2;
 		dx /= 2;
 		dy /= 2;
 	}
+	dx = Math.trunc(dx);
+	dy = Math.trunc(dy);
+
 	drawLabel(ctx, "scale 1:" + scale.toString(),
 		this.center.x, lowerEdge - 1 * lineHeight, "center");
 	if(scale > 1) {
