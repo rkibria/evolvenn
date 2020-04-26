@@ -18,10 +18,6 @@ ManualController.prototype.run = function(ctx) {
 		this.accel.clear();
 	}
 
-	// Control indicators
-	ctx.save();
-	ctx.restore();
-
 	this.visualizer.model.run(this.accel);
 	this.visualizer.draw(ctx, this.accel);
 };
