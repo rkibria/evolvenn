@@ -17,9 +17,9 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 
 	// Acceleration indicator
 	if(accel != null && !accel.isZero()) {
-		const minArrowLen = this.s/8;
-		const maxArrowLen = this.s/2 * 0.9;
-		let arrowLen = accelLen;
+		const minArrowLen = 20;
+		const maxArrowLen = this.s/2 * 0.95;
+		let arrowLen = accelLen * this.s/2;
 		arrowLen = Math.min(arrowLen, maxArrowLen);
 		arrowLen = Math.max(arrowLen, minArrowLen);
 
@@ -32,13 +32,14 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 		ctx.save();
 		ctx.strokeStyle = "green";
 		ctx.fillStyle = "green"
-		ctx.lineWidth = 1;
-		drawArrowhead(ctx, this.center, this._accelArrow, 5);
+		ctx.lineWidth = 3;
+		drawArrowhead(ctx, this.center, this._accelArrow, 15);
 		ctx.beginPath();
 		ctx.moveTo(this.center.x, this.center.y);
 		ctx.lineTo(this._accelArrow.x, this._accelArrow.y);
 		ctx.stroke();
 		ctx.restore();
+
 		drawLabel(ctx, accelLen.toFixed(3), this._accelArrow.x, this._accelArrow.y);
 	}
 
@@ -68,8 +69,10 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 	// Particle
 	ctx.fillStyle = "red";
 	ctx.beginPath();
-	const x = this.center.x + Math.trunc(this.model.particle.pos.x);
-	const y = this.center.y - Math.trunc(this.model.particle.pos.y);
+	const dx = Math.trunc(this.model.particle.pos.x);
+	const dy = Math.trunc(this.model.particle.pos.y);
+	const x = this.center.x + dx;
+	const y = this.center.y - dy;
 	const r = 3;
 	ctx.arc(x, y, r, 0, (Math.PI * 2), true);
 	ctx.closePath();

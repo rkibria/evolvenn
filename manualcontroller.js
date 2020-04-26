@@ -12,7 +12,7 @@ ManualController.prototype.run = function(ctx) {
 	if(this.mouseclick.down) {
 		this.accel.set(this.mouse.x, this.visualizer.y + this.visualizer.s/2);
 		this.accel.subComps(this.visualizer.x + this.visualizer.s/2, this.mouse.y);
-		this.accel.divideScalar(100);
+		this.accel.divideScalar(this.visualizer.s/2);
 	}
 	else {
 		this.accel.clear();
