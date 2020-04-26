@@ -1,4 +1,5 @@
 
+/// x,y = top left, s = edge length of square display
 function Visualizer(model, x, y, s) {
 	this.model = model;
 	this.x = x;
@@ -60,17 +61,37 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 	// Position and speed
 	const lowerEdge = this.y + this.s;
 	const leftEdge = this.x + 5;
+	const lineHeight = 13;
 	const prec = 2;
 	drawLabel(ctx, "pos: " + this.model.particle.pos.x.toFixed(prec) + "," + this.model.particle.pos.y.toFixed(prec),
-		leftEdge, lowerEdge - 2 * 12, "left");
+		leftEdge, lowerEdge - 2 * lineHeight, "left");
 	drawLabel(ctx, "vel: " + this.model.particle.vel.x.toFixed(prec) + "," + this.model.particle.vel.y.toFixed(prec),
-		leftEdge, lowerEdge - 1 * 12, "left");
+		leftEdge, lowerEdge - 1 * lineHeight, "left");
 
 	// Particle
+	let scale = 1;
+	let dx = Math.trunc(this.model.particle.pos.x);
+	let dy = Math.trunc(this.model.particle.pos.y);
+	const edge = this.s / 2;
+	while(Math.abs(dx) > edge || Math.abs(dy) > edge) {
+		scale *= 2;
+		dx /= 2;
+		dy /= 2;
+	}
+	drawLabel(ctx, "scale 1:" + scale.toString(),
+		this.center.x, lowerEdge - 1 * lineHeight, "center");
+	if(scale > 1) {
+		ctx.save();
+		ctx.strokeStyle = "darkgrey";
+		ctx.setLineDash([1, 1]);
+		const scaleBoxSize = this.s / scale;
+		ctx.strokeRect(this.center.x - scaleBoxSize/2, this.center.y - scaleBoxSize/2,
+			scaleBoxSize, scaleBoxSize);
+		ctx.restore();
+	}
+
 	ctx.fillStyle = "red";
 	ctx.beginPath();
-	const dx = Math.trunc(this.model.particle.pos.x);
-	const dy = Math.trunc(this.model.particle.pos.y);
 	const x = this.center.x + dx;
 	const y = this.center.y - dy;
 	const r = 3;
