@@ -1,3 +1,6 @@
+/*
+	Abstract model of the world
+*/
 
 function Particle() {
 	this.pos = new Vec2();

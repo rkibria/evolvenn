@@ -1,5 +1,11 @@
+/*
+	Draw a model into a context
 
-/// x,y = top left, s = edge length of square display
+	Also stores reference to the model so can be used as the sole storage.
+	The drawing method does not automatically run the model.
+*/
+
+// x,y = top left, s = edge length of square display
 function Visualizer(model, x, y, s) {
 	this.model = model;
 	this.x = x;
@@ -12,14 +18,13 @@ function Visualizer(model, x, y, s) {
 }
 
 Visualizer.prototype.draw = function(ctx, accel=null) {
-	const accelLen = accel.length();
-
 	ctx.save();
 
 	// Acceleration indicator
 	if(accel != null && !accel.isZero()) {
 		const minArrowLen = 20;
 		const maxArrowLen = this.s/2 * 0.95;
+		const accelLen = accel.length();
 		let arrowLen = accelLen * this.s/2;
 		arrowLen = Math.min(arrowLen, maxArrowLen);
 		arrowLen = Math.max(arrowLen, minArrowLen);

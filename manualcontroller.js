@@ -1,3 +1,8 @@
+/*
+	Mouse control for the model
+
+	The visualizer contains the model.
+*/
 
 function ManualController(visualizer, mouse, mouseclick) {
 	this.visualizer = visualizer;
@@ -7,6 +12,9 @@ function ManualController(visualizer, mouse, mouseclick) {
 	this.accel = new Vec2();
 }
 
+/*
+	Run model and visualize in context ctx
+*/
 ManualController.prototype.run = function(ctx) {
 	// Set acceleration
 	if(this.mouseclick.down) {
