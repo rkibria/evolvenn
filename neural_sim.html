@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>Neuro experiment 1 - Neural simulation</title>
+<style>
+body {background-color: black;}
+
+html *
+{
+	font-size: 1em;
+	color: lightgray;
+	font-family: Arial;
+}
+</style>
+</head>
+
+<body>
+
+<script src="drawing.js"></script>
+<script src="vec2.js"></script>
+<script src="random.js"></script>
+<script src="worldmodel.js"></script>
+<script src="visualizer.js"></script>
+<script src="mouse.js"></script>
+<script src="neuralcontroller.js"></script>
+
+<div class='parent'>
+	<div class='child float-left-child'>
+		<canvas id="canvas" width="800" height="800" style="border:0px;">Your browser does not support the HTML5 canvas tag.</canvas>
+	</div>
+</div>
+
+<script>
+
+const canvas = document.getElementById('canvas');
+const canvasW = canvas.scrollWidth, canvasH = canvas.scrollHeight;
+
+const mouse = captureMouse(canvas);
+const mouseclick = captureMouseclick(canvas);
+
+const g_controller = new NeuralController(
+	new Visualizer(new WorldModel(), 10, 10, 780),
+	null);
+
+window.onload = function() {
+	const ctx = canvas.getContext('2d');
+	ctx.fillStyle = "black";
+	ctx.fillRect(0, 0, canvasW, canvasH);
+
+	(function drawFrame () {
+		window.requestAnimationFrame(drawFrame, canvas);
+		ctx.clearRect(0, 0, canvasW, canvasH);
+		// const t0 = performance.now();
+
+		g_controller.run(ctx);
+
+		// const t1 = performance.now();
+		// console.log((t1 - t0) + " ms");
+	}());
+}
+
+</script>
+
+</body>
+</html>
