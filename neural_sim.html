@@ -24,6 +24,7 @@ html *
 <script src="worldmodel.js"></script>
 <script src="visualizer.js"></script>
 <script src="mouse.js"></script>
+<script src="neuralnet.js"></script>
 <script src="neuralcontroller.js"></script>
 
 <div class='parent'>
@@ -42,7 +43,7 @@ const mouseclick = captureMouseclick(canvas);
 
 const g_controller = new NeuralController(
 	new Visualizer(new WorldModel(), 10, 10, 780),
-	null);
+	new NeuralNet());
 
 window.onload = function() {
 	const ctx = canvas.getContext('2d');

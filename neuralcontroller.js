@@ -17,6 +17,7 @@ function NeuralController(visualizer, nnet) {
 NeuralController.prototype.run = function(ctx=null) {
 	this.accel.clear();
 
+	this.nnet.run(this.visualizer.model, this.accel);
 	this.visualizer.model.run(this.accel);
 
 	if(ctx != null) {
