@@ -8,7 +8,6 @@ function AutoController(visualizer) {
 	this.visualizer = visualizer;
 
 	this.MAX_ACCEL = 0.1;
-	this.VEL_LIMIT = 0.1;
 
 	this.phase = 0;
 	this.burnTime = 0;
@@ -26,9 +25,10 @@ AutoController.prototype.computeAcceleration = function() {
 	if( this.phase == 0) {
 		feedback = "1. Come to full stop";
 		const curVel = this.visualizer.model.particle.vel.length();
-		if( curVel > this.VEL_LIMIT ) {
+		if( curVel > 0.01 ) {
 			const decel = Math.min( this.MAX_ACCEL, curVel );
-			this.accel.copyScaled( this.visualizer.model.particle.vel, -decel );
+			this.accel.copyScaled( this.visualizer.model.particle.vel, -1/curVel )
+				.multiplyScalar( decel );
 		}
 		else {
 			this.phase = 1;
@@ -64,7 +64,20 @@ AutoController.prototype.computeAcceleration = function() {
 	}
 
 	if( this.phase == 3 ) {
-		feedback = "4. Finish";
+		feedback = "4. Come to full stop";
+		const curVel = this.visualizer.model.particle.vel.length();
+		if( curVel > 0.01 ) {
+			const decel = Math.min( this.MAX_ACCEL, curVel );
+			this.accel.copyScaled( this.visualizer.model.particle.vel, -1/curVel )
+				.multiplyScalar( decel );
+		}
+		else {
+			this.phase = 4;
+		}
+	}
+
+	if( this.phase == 4 ) {
+		feedback = "4. Finished";
 	}
 
 	return feedback;
