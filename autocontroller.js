@@ -7,6 +7,8 @@
 function AutoController(visualizer) {
 	this.visualizer = visualizer;
 
+	this.phase = 0;
+
 	this.accel = new Vec2();
 	this.vec1 = new Vec2();
 	this.vec2 = new Vec2();
@@ -17,15 +19,20 @@ AutoController.prototype.computeAcceleration = function() {
 
 	this.accel.clear();
 
-	this.vec1.copy(this.visualizer.model.particle.pos) // Vector from origin to particle
-		.normalize() // Normalize it
-		.perpendicularize(); // Vector perpendicular to the one from origin to particle
+	if( this.phase == 0) {
+		feedback = "1. Come to full stop";
+		const curVel = this.visualizer.model.particle.vel.length();
+		if( curVel > 0.001 ) {
+			const decel = Math.min( 1, curVel );
+			this.accel.copyScaled(this.visualizer.model.particle.vel, -decel);
+		}
+		else {
+			this.phase = 1;
+		}
+	}
 
-	let perpVel = this.visualizer.model.particle.vel.dot(this.vec1);
-	if(Math.abs(perpVel) > 0.001) {
-		perpVel = Math.min(1, perpVel); // Limit to 1
-		this.accel.copyScaled(this.vec1, -perpVel);
-		feedback = "Phase 1: remove perpendicular velocity";
+	if( this.phase == 1) {
+		feedback = "2. Accelerate to target";
 	}
 
 	return feedback;
