@@ -15,6 +15,46 @@ function Visualizer(model, x, y, s) {
 	this.center = new Vec2(this.x + this.s/2, this.y + this.s/2);
 
 	this._accelArrow = new Vec2();
+	this._rocketAngle = 0;
+	this._rocketFrame = 0;
+}
+
+Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null) {
+	ctx.save();
+	ctx.translate( x, y );
+
+	if( accel != null ) {
+		this._rocketAngle = Math.atan2( -accel.y, accel.x ) + Math.PI / 2;
+	}
+	ctx.rotate( this._rocketAngle );
+
+	ctx.beginPath();
+	ctx.lineWidth = "1";
+	ctx.strokeStyle = "grey";
+	ctx.moveTo( -10, 20 );
+	ctx.lineTo( -5, 15 );
+	ctx.lineTo( -5, -15 );
+	ctx.lineTo( 0, -20 );
+	ctx.lineTo( 5, -15 );
+	ctx.lineTo( 5, 15 );
+	ctx.lineTo( 10, 20 );
+	ctx.closePath();
+	ctx.stroke();
+
+	if( accel != null && !accel.isZero() ) {
+		ctx.beginPath();
+		ctx.strokeStyle = "orange";
+		ctx.moveTo( 0, 20 );
+		ctx.lineTo( 3, 23 );
+		ctx.lineTo( 0, 30 + this._rocketFrame * 2 + accel.length() * 15 );
+		ctx.lineTo( -3, 23 );
+		ctx.closePath();
+		ctx.stroke();
+
+		this._rocketFrame = ( this._rocketFrame + 1 ) % 5;
+	}
+
+	ctx.restore();
 }
 
 Visualizer.prototype.draw = function(ctx, accel=null) {
@@ -98,11 +138,14 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 		ctx.restore();
 	}
 
-	ctx.fillStyle = "red";
-	ctx.beginPath();
 	const x = this.center.x + dx;
 	const y = this.center.y - dy;
 	const r = 3;
+
+	this.drawRocket( ctx, x, y, accel );
+
+	ctx.fillStyle = "red";
+	ctx.beginPath();
 	ctx.arc(x, y, r, 0, (Math.PI * 2), true);
 	ctx.closePath();
 	ctx.fill();

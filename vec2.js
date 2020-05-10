@@ -4,6 +4,10 @@ function Vec2(x = 0.0, y = 0.0) {
 	this.y = y;
 }
 
+Vec2.prototype.angle = function() {
+	return Math.atan2(this.y, this.x);
+};
+
 Vec2.prototype.add = function(v) {
 	this.x += v.x;
 	this.y += v.y;
