@@ -13,7 +13,7 @@
  *             (not the arrowhead, the arrow itself).
  * @param radius The radius of the arrowhead. This controls how "thick" the arrowhead looks.
  */
-function drawArrowhead(context, from, to, radius) {
+function drawArrowhead(context, from, to, radius, filled=false) {
 	var x_center = to.x;
 	var y_center = to.y;
 
@@ -43,7 +43,12 @@ function drawArrowhead(context, from, to, radius) {
 
 	context.closePath();
 
-	context.fill();
+	if(filled) {
+		context.fill();
+	}
+	else {
+		context.stroke();
+	}
 }
 
 function drawLabel(ctx, txt, x, y, textAlign="center") {

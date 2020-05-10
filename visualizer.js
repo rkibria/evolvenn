@@ -78,7 +78,7 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 		ctx.save();
 		ctx.strokeStyle = "green";
 		ctx.fillStyle = "green"
-		ctx.lineWidth = 3;
+		ctx.lineWidth = 1;
 		drawArrowhead(ctx, this.center, this._accelArrow, 15);
 		ctx.beginPath();
 		ctx.moveTo(this.center.x, this.center.y);
@@ -140,7 +140,7 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 
 	const x = this.center.x + dx;
 	const y = this.center.y - dy;
-	const r = 3;
+	const r = 2;
 
 	this.drawRocket( ctx, x, y, accel );
 
