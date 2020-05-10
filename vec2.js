@@ -117,6 +117,13 @@ Vec2.prototype.normalize = function() {
 	return this.divideScalar(this.length());
 };
 
+Vec2.prototype.perpendicularize = function() {
+	const tx = this.x;
+	this.x = -this.y;
+	this.y = tx;
+	return this;
+};
+
 Vec2.prototype.randomInUnitDisk = function() {
 	do {
 		this.x = 2.0 * Math.random() - 1.0;
