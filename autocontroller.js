@@ -13,6 +13,8 @@ function AutoController(visualizer) {
 }
 
 AutoController.prototype.computeAcceleration = function() {
+	let feedback = "";
+
 	this.accel.clear();
 
 	this.vec1.copy(this.visualizer.model.particle.pos) // Vector from origin to particle
@@ -23,17 +25,25 @@ AutoController.prototype.computeAcceleration = function() {
 	if(Math.abs(perpVel) > 0.001) {
 		perpVel = Math.min(1, perpVel); // Limit to 1
 		this.accel.copyScaled(this.vec1, -perpVel);
+		feedback = "Phase 1: remove perpendicular velocity";
 	}
+
+	return feedback;
 }
 
 /*
 	Run model and optionally visualize in context ctx
 */
 AutoController.prototype.run = function(ctx=null) {
-	this.computeAcceleration();
+	const feedback = this.computeAcceleration();
+
 	this.visualizer.model.run(this.accel);
 
 	if(ctx != null) {
+		drawLabel(ctx, feedback,
+			this.visualizer.x + this.visualizer.s/2, this.visualizer.y + 20,
+			"center");
+
 		this.visualizer.draw(ctx, this.accel);
 	}
 };
