@@ -6,15 +6,18 @@
 
 function AutoController(visualizer) {
 	this.visualizer = visualizer;
-
 	this.MAX_ACCEL = 0.1;
 
+	this.accel = new Vec2();
+	this.reset();
+}
+
+AutoController.prototype.reset = function() {
 	this.phase = 0;
 	this.burnTime = 0;
 
-	this.accel = new Vec2();
-	this.vec1 = new Vec2();
-	this.vec2 = new Vec2();
+	this.visualizer.model.particle.pos.randomInUnitDisk().multiplyScalar(300);
+	this.visualizer.model.particle.vel.randomInUnitDisk().multiplyScalar(10);
 }
 
 AutoController.prototype.computeAcceleration = function() {
