@@ -46,7 +46,7 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null) {
 		ctx.strokeStyle = "orange";
 		ctx.moveTo( 0, 20 );
 		ctx.lineTo( 3, 23 );
-		ctx.lineTo( 0, 30 + this._rocketFrame * 2 + accel.length() * 15 );
+		ctx.lineTo( 0, 30 + this._rocketFrame * 2 + Math.min( accel.length(), 5 ) * 15 );
 		ctx.lineTo( -3, 23 );
 		ctx.closePath();
 		ctx.stroke();

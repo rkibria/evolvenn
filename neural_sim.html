@@ -13,6 +13,37 @@ html *
 	color: lightgray;
 	font-family: Arial;
 }
+
+.float-left-child {
+	float: left;
+}
+
+/* base css */
+body {
+	padding: 0px;
+}
+.parent {
+	padding: 0px
+}
+.child {
+	padding: 5px
+}
+
+.button {
+	background-color: #303030;
+	width: 150px;
+	border: solid 2px lightgray;
+	color: lightgray;
+	padding: 5px 3px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	margin: 4px 2px;
+	cursor: pointer;
+}
+
+.button1 {font-size: 16px;}
+
 </style>
 </head>
 
@@ -30,6 +61,13 @@ html *
 <div class='parent'>
 	<div class='child float-left-child'>
 		<canvas id="canvas" width="800" height="800" style="border:0px;">Your browser does not support the HTML5 canvas tag.</canvas>
+	</div>
+	<div class='child float-left-child'>
+		<div class='parent'>
+			<div class='child float-left-child'>
+				<button class="button button1" onclick="onResetButton()">Reset</button><br>
+			</div>
+		</div>
 	</div>
 </div>
 
@@ -60,6 +98,10 @@ window.onload = function() {
 		// const t1 = performance.now();
 		// console.log((t1 - t0) + " ms");
 	}());
+}
+
+function onResetButton() {
+	g_controller.reset();
 }
 
 </script>

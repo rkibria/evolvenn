@@ -9,6 +9,12 @@ function NeuralController(visualizer, nnet) {
 	this.nnet = nnet;
 
 	this.accel = new Vec2();
+	this.reset();
+}
+
+NeuralController.prototype.reset = function() {
+	this.visualizer.model.particle.pos.randomInUnitDisk().multiplyScalar(300);
+	this.visualizer.model.particle.vel.randomInUnitDisk().multiplyScalar(10);
 }
 
 /*
