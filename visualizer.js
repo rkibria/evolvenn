@@ -86,7 +86,7 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 		ctx.stroke();
 		ctx.restore();
 
-		drawLabel(ctx, accelLen.toFixed(3), this._accelArrow.x, this._accelArrow.y);
+		drawLabel( ctx, accelLen.toFixed(3), this.center.x, this.center.y );
 	}
 
 	// Center cross

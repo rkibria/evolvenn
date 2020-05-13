@@ -5,6 +5,8 @@
 */
 
 function NeuralNet() {
+	this.MAX_ACCEL = 0.1;
+
 	this.inputs = new Array(4).fill(0);
 
 	this.weights = new Array(40).fill(0);
@@ -53,7 +55,7 @@ NeuralNet.prototype.getInput = function( iLayer, iInput ) {
 
 NeuralNet.prototype.getActivation = function( weightedInputs ) {
 	let activation = Math.max(0, weightedInputs);
-	activation = Math.min(1, weightedInputs);
+	activation = Math.min(1, activation);
 	return activation;
 }
 
@@ -76,6 +78,13 @@ NeuralNet.prototype.run = function( model, accel ) {
 		}
 	}
 
+	// Translate raw outputs to length/angle
 	const outputIndex = this.getOutputIndex( 2, 0 );
-	accel.set( this.outputs[ outputIndex ], this.outputs[ outputIndex + 1 ] );
+	const out_0 = this.outputs[ outputIndex ];
+	const out_1 = this.outputs[ outputIndex + 1 ];
+
+	const accelLen = out_0 * this.MAX_ACCEL;
+	const accelAngle = out_1 * 2 * Math.PI;
+
+	accel.setLengthAngle( 1, accelAngle ).multiplyScalar( accelLen );
 };

@@ -148,6 +148,12 @@ Vec2.prototype.set = function(x, y) {
 	return this;
 };
 
+Vec2.prototype.setLengthAngle = function(length, angle) {
+	this.x = length * Math.cos( angle );
+	this.y = length * Math.sin( angle );
+	return this;
+};
+
 Vec2.prototype.setScalar = function(s) {
 	this.x = s;
 	this.y = s;
