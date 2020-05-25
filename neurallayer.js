@@ -17,7 +17,15 @@ NeuralLayer.prototype._activation = function( weightedInputs ) {
 	return activation;
 }
 
+NeuralLayer.prototype.randomize = function() {
+	for(let i = 0; i < this.weights.length; ++i) {
+		this.weights[ i ] = Math.random() - 0.5;
+	}
+}
+
 /*
+Returns outputs array.
+
 input 1 -w1.1- N --- output 1 = i1 * w1.1 + i2 * w1.2
             \ /
              X
@@ -32,4 +40,5 @@ NeuralLayer.prototype.run = function( inputs ) {
 		}
 		this.outputs[ i ] = this._activation( weightedInputs );
 	}
+	return this.outputs;
 }

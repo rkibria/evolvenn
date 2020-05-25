@@ -1,62 +1,26 @@
 /*
-	Neural network for controlling the particle
-
-	Hardcoded 1 input layer, 1 hidden layer, 1 output layer
+	Generic neural network, uses NeuralLayer
 */
 
-function NeuralNet() {
-	this.MAX_ACCEL = 0.1;
+/*
+layersList is an array of numbers which are the neuron counts in that layer,
+which is also the number of outputs of that layer.
+
+e.g. (4, [ 4, 4, 2 ] ) = 4 inputs for input layer, 4 neurons in hidden layer, 2 output neurons
+*/
+function NeuralNet( nInputs, layersList ) {
+	// this.MAX_ACCEL = 0.1;
 
 	this.inputs = new Array(4).fill(0);
 
-	this.weights = new Array(40).fill(0);
-
-	for(let i = 0; i < 40; ++i) {
-		this.weights[i] = Math.random() - 0.5;
+	this.layers = [];
+	let inputs = nInputs;
+	for(let i = 0; i < layersList.length; ++i) {
+		const curLayerNeurons = layersList[ i ];
+		const layer = new NeuralLayer( inputs, curLayerNeurons );
+		this.layers.push( layer );
+		inputs = curLayerNeurons;
 	}
-
-	this.outputs = new Array(10).fill(0);
-}
-
-// iLayer = 0..2, iNeuron = 0..3(1)
-NeuralNet.prototype.getOutputIndex = function( iLayer, iNeuron ) {
-	let i = 0;
-	i += iLayer * 4;
-	i += iNeuron;
-	return i;
-};
-
-NeuralNet.prototype.setOutput = function( iLayer, iNeuron, activation ) {
-	this.outputs[ this.getOutputIndex( iLayer, iNeuron, activation ) ] = activation;
-}
-
-// iLayer = 0..2, iNeuron = 0..3(1), iWeight = 0..3
-NeuralNet.prototype.getWeightIndex = function( iLayer, iNeuron, iWeight ) {
-	let i = 0;
-	i += iLayer * 16;
-	i += iNeuron * 4;
-	i += iWeight;
-	return i;
-};
-
-NeuralNet.prototype.getWeight = function( iLayer, iNeuron, iWeight ) {
-	return this.weights[ this.getWeightIndex( iLayer, iNeuron, iWeight ) ];
-}
-
-// Input for iLayer = 0..2, iInput = 0..3
-NeuralNet.prototype.getInput = function( iLayer, iInput ) {
-	if( iLayer == 0) {
-		return this.inputs[ iInput ];
-	}
-	else {
-		return this.outputs[ ( iLayer - 1 ) * 4 + iInput ];
-	}
-}
-
-NeuralNet.prototype.getActivation = function( weightedInputs ) {
-	let activation = Math.max(0, weightedInputs);
-	activation = Math.min(1, activation);
-	return activation;
 }
 
 // Returns acceleration for the particle
