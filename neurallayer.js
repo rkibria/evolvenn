@@ -7,17 +7,13 @@
 function NeuralLayer( nInputs, nNeurons ) {
 	this.nInputs = nInputs;
 	this.nNeurons = nNeurons;
-	this.weights = new Array( nInputs * nNeurons ).fill( 0 );
+	// 1 bias input per neuron
+	this.weights = new Array( ( nInputs + 1 ) * nNeurons ).fill( 0 );
 	this.outputs = new Array( nNeurons ).fill( 0 );
 }
 
-NeuralLayer.prototype._activation = function( weightedInputs ) {
-	let activation = Math.max( 0, weightedInputs );
-	activation = Math.min( 1, activation );
-	return activation;
-}
-
 NeuralLayer.prototype.randomize = function() {
+	this.bias = Math.random() - 0.5;
 	for(let i = 0; i < this.weights.length; ++i) {
 		this.weights[ i ] = Math.random() - 0.5;
 	}
@@ -26,20 +22,17 @@ NeuralLayer.prototype.randomize = function() {
 /*
 @param inputs List of numbers containing input values
 @return Outputs array
-
-input 1 -w1.1- N --- output 1 = i1 * w1.1 + i2 * w1.2
-            \ /
-             X
-           /  \
-input 2 -w1.2  N ---
 */
 NeuralLayer.prototype.run = function( inputs ) {
+	let weightIndex = 0;
 	for( let i = 0; i < this.nNeurons; ++i ) {
-		let weightedInputs = 0;
+		let weightedInputs = this.weights[ weightIndex++ ];
 		for( let j = 0; j < this.nInputs; ++j ) {
-			weightedInputs += this.weights[ j ] * inputs[ j ];
+			weightedInputs += this.weights[ weightIndex++ ] * inputs[ j ];
 		}
-		this.outputs[ i ] = this._activation( weightedInputs );
+		// https://en.wikipedia.org/wiki/Rectifier_(neural_networks)
+		const activation = Math.max( 0, weightedInputs );
+		this.outputs[ i ] = activation;
 	}
 	return this.outputs;
 }

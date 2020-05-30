@@ -30,7 +30,7 @@ PilotNet.prototype.run = function( outAccel, model ) {
 	const outputs = this._nnet.run( this._inputs );
 
 	const MAX_ACCEL = 0.1;
-	const accelLen = outputs[ 0 ] * MAX_ACCEL;
+	const accelLen = Math.min( outputs[ 0 ], MAX_ACCEL );
 	const accelAngle = outputs[ 1 ] * 2 * Math.PI;
 	outAccel.setLengthAngle( 1, accelAngle ).multiplyScalar( accelLen );
 };
