@@ -57,8 +57,8 @@ body {
 <script src="mouse.js"></script>
 <script src="neurallayer.js"></script>
 <script src="neuralnet.js"></script>
-<script src="controllernet.js"></script>
-<script src="neuralcontroller.js"></script>
+<script src="pilotnet.js"></script>
+<script src="neuralpilot.js"></script>
 
 <div class='parent'>
 	<div class='child float-left-child'>
@@ -81,9 +81,7 @@ const canvasW = canvas.scrollWidth, canvasH = canvas.scrollHeight;
 const mouse = captureMouse(canvas);
 const mouseclick = captureMouseclick(canvas);
 
-const g_controller = new NeuralController(
-	new Visualizer(new WorldModel(), 10, 10, 780),
-	new NeuralNet());
+const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), 10, 10, 780 ) );
 
 window.onload = function() {
 	const ctx = canvas.getContext('2d');
@@ -95,7 +93,7 @@ window.onload = function() {
 		ctx.clearRect(0, 0, canvasW, canvasH);
 		// const t0 = performance.now();
 
-		g_controller.run(ctx);
+		g_pilot.run(ctx);
 
 		// const t1 = performance.now();
 		// console.log((t1 - t0) + " ms");
@@ -103,7 +101,7 @@ window.onload = function() {
 }
 
 function onResetButton() {
-	g_controller.reset();
+	g_pilot.reset();
 }
 
 </script>

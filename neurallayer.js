@@ -24,7 +24,8 @@ NeuralLayer.prototype.randomize = function() {
 }
 
 /*
-Returns outputs array.
+@param inputs List of numbers containing input values
+@return Outputs array
 
 input 1 -w1.1- N --- output 1 = i1 * w1.1 + i2 * w1.2
             \ /

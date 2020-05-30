@@ -3,52 +3,35 @@
 */
 
 /*
-layersList is an array of numbers which are the neuron counts in that layer,
-which is also the number of outputs of that layer.
+@param nInputs Number of inputs of the whole net
+@param layersList Array neuron counts per layer
 
-e.g. (4, [ 4, 4, 2 ] ) = 4 inputs for input layer, 4 neurons in hidden layer, 2 output neurons
+(4, [ 4, 4, 2 ] ) = 4 inputs for input layer, 4 neurons in hidden layer, 2 output neurons
 */
 function NeuralNet( nInputs, layersList ) {
-	// this.MAX_ACCEL = 0.1;
-
-	this.inputs = new Array(4).fill(0);
-
-	this.layers = [];
-	let inputs = nInputs;
-	for(let i = 0; i < layersList.length; ++i) {
-		const curLayerNeurons = layersList[ i ];
-		const layer = new NeuralLayer( inputs, curLayerNeurons );
-		this.layers.push( layer );
-		inputs = curLayerNeurons;
+	this._layers = [];
+	let nNextInputs = nInputs;
+	for( let i = 0; i < layersList.length; ++i ) {
+		const nNeurons = layersList[ i ];
+		this._layers.push( new NeuralLayer( nNextInputs, nNeurons ) );
+		nNextInputs = nNeurons;
 	}
 }
 
-// Returns acceleration for the particle
-NeuralNet.prototype.run = function( model, accel ) {
-	this.inputs[ 0 ] = model.particle.pos.x;
-	this.inputs[ 1 ] = model.particle.pos.y;
-	this.inputs[ 2 ] = model.particle.vel.x;
-	this.inputs[ 3 ] = model.particle.vel.y;
-
-	for( let iLayer = 0; iLayer < 3; ++iLayer ) {
-		const nNeurons = ( iLayer < 2 ) ? 4 : 2;
-		for( let iNeuron = 0; iNeuron < nNeurons; ++iNeuron ) {
-			let weightedInputs = 0;
-			for( let iWeight = 0; iWeight < 4; ++iWeight ) {
-				weightedInputs += this.getWeight( iLayer, iNeuron, iWeight ) * this.getInput( iLayer, iWeight );
-			}
-			const activation = this.getActivation( weightedInputs );
-			this.setOutput( iLayer, iNeuron, activation );
-		}
+NeuralNet.prototype.randomize = function() {
+	for( let i = 0; i < this._layers.length; ++i ) {
+		this._layers[ i ].randomize();
 	}
+}
 
-	// Translate raw outputs to length/angle
-	const outputIndex = this.getOutputIndex( 2, 0 );
-	const out_0 = this.outputs[ outputIndex ];
-	const out_1 = this.outputs[ outputIndex + 1 ];
-
-	const accelLen = out_0 * this.MAX_ACCEL;
-	const accelAngle = out_1 * 2 * Math.PI;
-
-	accel.setLengthAngle( 1, accelAngle ).multiplyScalar( accelLen );
+/*
+@param inputs Array containing the input values
+@return Outputs array
+*/
+NeuralNet.prototype.run = function( inputs ) {
+	let nextInputs = inputs;
+	for( let i = 0; i < this._layers.length; ++i ) {
+		nextInputs = this._layers[ i ].run( nextInputs );
+	}
+	return nextInputs
 };
