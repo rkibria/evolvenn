@@ -3,14 +3,22 @@
 */
 
 /*
+@param innerLayers Array of neuron counts for each hidden layer (without the output layer)
 */
-function PilotNet() {
+function PilotNet( innerLayers ) {
 	this._inputs = new Array( 4 ).fill( 0 );
-	this._nnet = new NeuralNet( 4, [ 4, 4, 2 ] );
+
+	const allLayers = innerLayers.slice();
+	allLayers.push( 2 );
+	this._nnet = new NeuralNet( 4, allLayers );
+}
+
+PilotNet.prototype.randomize = function() {
 	this._nnet.randomize();
 }
 
 /*
+@param outAccel
 @param model
 */
 PilotNet.prototype.run = function( outAccel, model ) {

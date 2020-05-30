@@ -81,7 +81,9 @@ const canvasW = canvas.scrollWidth, canvasH = canvas.scrollHeight;
 const mouse = captureMouse(canvas);
 const mouseclick = captureMouseclick(canvas);
 
-const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), 10, 10, 780 ) );
+const pilotNet = new PilotNet( [ 4, 4] );
+pilotNet.randomize();
+const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), 10, 10, 780 ), pilotNet );
 
 window.onload = function() {
 	const ctx = canvas.getContext('2d');

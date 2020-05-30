@@ -4,9 +4,9 @@
 	The visualizer contains the model.
 */
 
-function NeuralPilot( visualizer ) {
+function NeuralPilot( visualizer, pilotNet ) {
 	this._visualizer = visualizer;
-	this._nnet = new PilotNet();
+	this._pilotNet = pilotNet;
 
 	this._accel = new Vec2();
 	this.reset();
@@ -23,7 +23,7 @@ NeuralPilot.prototype.reset = function() {
 NeuralPilot.prototype.run = function( ctx = null ) {
 	this._accel.clear();
 
-	this._nnet.run( this._accel, this._visualizer.model );
+	this._pilotNet.run( this._accel, this._visualizer.model );
 	this._visualizer.model.run( this._accel );
 
 	if( ctx != null ) {
