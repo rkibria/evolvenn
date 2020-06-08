@@ -1,0 +1,452 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Evolving Circles</title>
+</head>
+<body>
+<canvas id="canvas" width="1000" height="600"></canvas>
+<br>
+<button onclick="onRestartButton()">Restart</button>
+<br>
+Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
+Generations/tick: <input type="number" id="ID_GENS_TICK" min="0" value="1"><br>
+Number of circles: <input type="number" id="ID_NUM_CIRCLES" min="0" value="3"><br>
+<br>
+Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
+Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100">
+
+<script>
+
+///////////////////////////////////////////////////////////
+function Vector2(x = 0.0, y = 0.0) {
+    this.x = x;
+    this.y = y;
+}
+
+Vector2.prototype.add = function(v) {
+    this.x += v.x;
+    this.y += v.y;
+    return this;
+};
+
+Vector2.prototype.addScalar = function(s) {
+    this.x += s;
+    this.y += s;
+    return this;
+};
+
+Vector2.prototype.addScaledVector = function(v, s) {
+    this.x += v.x * s;
+    this.y += v.y * s;
+    return this;
+};
+
+Vector2.prototype.addVectors = function(a, b) {
+    this.x = a.x + b.x;
+    this.y = a.y + b.y;
+    return this;
+};
+
+Vector2.prototype.copy = function(v) {
+    this.x = v.x;
+    this.y = v.y;
+    return this;
+};
+
+Vector2.prototype.copyScaled = function(v, s) {
+    this.x = v.x * s;
+    this.y = v.y * s;
+    return this;
+};
+
+Vector2.prototype.divide = function(v) {
+    this.x /= v.x;
+    this.y /= v.y;
+    return this;
+};
+
+Vector2.prototype.divideScalar = function(s) {
+    this.x /= s;
+    this.y /= s;
+    return this;
+};
+
+Vector2.prototype.dot = function(v) {
+    return this.x * v.x + this.y * v.y;
+};
+
+Vector2.prototype.equals = function(v) {
+    return this.x == v.x && this.y == v.y;
+};
+
+Vector2.prototype.length = function() {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+};
+
+Vector2.prototype.lengthSq = function() {
+    return (this.x * this.x + this.y * this.y);
+};
+
+Vector2.prototype.map = function(f) {
+    this.x = f(this.x);
+    this.y = f(this.y);
+    return this;
+};
+
+Vector2.prototype.mapFrom = function(v, f) {
+    this.x = f(v.x);
+    this.y = f(v.y);
+    return this;
+};
+
+Vector2.prototype.multiply = function(v) {
+    this.x *= v.x;
+    this.y *= v.y;
+    return this;
+};
+
+Vector2.prototype.multiplyScalar = function(s) {
+    this.x *= s;
+    this.y *= s;
+    return this;
+};
+
+Vector2.prototype.multiplyVectors = function(a, b) {
+    this.x = a.x * b.x;
+    this.y = a.y * b.y;
+    return this;
+};
+
+Vector2.prototype.normalize = function() {
+    return this.divideScalar(this.length());
+};
+
+Vector2.prototype.randomInUnitDisk = function() {
+    do {
+        this.x = 2.0 * Math.random() - 1.0;
+        this.y = 2.0 * Math.random() - 1.0;
+    } while(this.lengthSq() >= 1.0);
+    return this;
+};
+
+Vector2.prototype.set = function(x, y, z) {
+    this.x = x;
+    this.y = y;
+    return this;
+};
+
+Vector2.prototype.setScalar = function(s) {
+    this.x = s;
+    this.y = s;
+    return this;
+};
+
+Vector2.prototype.sub = function(v) {
+    this.x -= v.x;
+    this.y -= v.y;
+    return this;
+};
+
+Vector2.prototype.subScalar = function(s) {
+    this.x -= s;
+    this.y -= s;
+    return this;
+};
+
+Vector2.prototype.subScaledVector = function(v, s) {
+    this.x -= v.x * s;
+    this.y -= v.y * s;
+    return this;
+};
+
+Vector2.prototype.subVectors = function(a, b) {
+    this.x = a.x - b.x;
+    this.y = a.y - b.y;
+    return this;
+};
+
+Vector2.prototype.toString = function Vector2ToString() {
+    return "[" + this.x + ', ' + this.y + "]";
+};
+
+///////////////////////////////////////////////////////////
+function Circle()
+{
+	this.pos = new Vector2();
+	this.r = 3;
+	this.polarity = 1;
+}
+
+Circle.prototype.randomize = function()
+{
+	this.pos.randomInUnitDisk().multiplyScalar(250);
+}
+
+Circle.prototype.draw = function(context)
+{
+	context.beginPath();
+	context.fillStyle = this.polarity == 1 ? "#000000" : "#FF0000";
+	context.arc(this.pos.x, this.pos.y, this.r, 0, (Math.PI * 2), true);
+	context.closePath();
+	context.fill();
+}
+
+Circle.prototype.copy = function(other)
+{
+	this.pos.copy(other.pos);
+	this.r = other.r;
+	return this;
+}
+
+Circle.prototype.gaussian_rand = function()
+{
+	var rand = 0;
+
+	for(var i = 0; i < 6; i += 1) {
+		rand += Math.random();
+	}
+
+	return rand / 6;
+}
+
+Circle.prototype.noise = function(spread)
+{
+	return spread * (this.gaussian_rand() - 0.5);
+}
+
+Circle.prototype.mutate = function(spread)
+{
+	this.pos.x += this.noise(spread);
+	this.pos.y += this.noise(spread);
+}
+
+///////////////////////////////////////////////////////////
+function Individual(num)
+{
+	this.fitness = 0;
+
+	this.circles = [];
+	for(let i = 0; i < num; ++i) {
+		this.circles.push(new Circle());
+		this.circles[i].polarity = (i % 2 == 0) ? -1 : 1;
+	}
+}
+
+Individual.prototype.mutate = function(spread)
+{
+	for(let i = 0; i < this.circles.length; ++i) {
+		this.circles[i].mutate(spread);
+	}
+}
+
+Individual.prototype.randomize = function()
+{
+	for(let i = 0; i < this.circles.length; ++i) {
+		this.circles[i].randomize();
+	}
+}
+
+Individual.prototype.copy = function(other)
+{
+	for(let i = 0; i < this.circles.length; ++i) {
+		this.circles[i].copy(other.circles[i]);
+	}
+	this.fitness = other.fitness;
+}
+
+Individual.prototype.clone = function()
+{
+	const cloned = new Individual(this.circles.length);
+	for(let i = 0; i < this.circles.length; ++i) {
+		cloned.circles[i].copy(this.circles[i]);
+	}
+	return cloned;
+}
+
+Individual.prototype.draw = function(context)
+{
+	let center_x = 0;
+	let center_y = 0;
+	for(let i = 0; i < this.circles.length; ++i) {
+		center_x += this.circles[i].pos.x;
+		center_y += this.circles[i].pos.y;
+	}
+	center_x /= this.circles.length;
+	center_y /= this.circles.length;
+
+	context.save();
+	context.translate(500 - center_x, 250 - center_y);
+	for(let i = 0; i < this.circles.length; ++i) {
+		this.circles[i].draw(context);
+	}
+	context.restore();
+}
+
+Individual.prototype.evaluate = function()
+{
+	let fitness = 0;
+	for(let i = 0; i < this.circles.length; ++i) {
+		const idv1 = this.circles[i];
+		const idv2 = this.circles[(i + 1) % this.circles.length];
+		const dv = new Vector2().subVectors(idv1.pos, idv2.pos);
+		fitness += Math.abs(dv.length() - ((i % 2) + 1) / 2 * 30);
+	}
+	this.fitness = fitness;
+}
+
+Individual.prototype.get_fitness = function()
+{
+	return this.fitness;
+}
+
+function compare_individuals(a, b)
+{
+	return a.get_fitness() - b.get_fitness();
+}
+
+///////////////////////////////////////////////////////////
+function Population()
+{
+	this.individuals = [];
+	for(let i = 0; i < g_pop_size; ++i) {
+		const idv = new Individual(g_num_circles);
+		idv.randomize();
+		idv.evaluate();
+		this.individuals.push(idv);
+	}
+	this.individuals.sort(compare_individuals);
+}
+
+Population.prototype.evolve = function(spread)
+{
+	const half = Math.trunc(this.individuals.length / 2)
+	for(let i = 0; i < half; ++i) {
+		const parent = this.individuals[i];
+		const offspring = this.individuals[half + i];
+
+		offspring.copy(parent);
+		offspring.mutate(spread);
+		offspring.evaluate();
+
+		parent.mutate(spread);
+		parent.evaluate();
+	}
+	this.individuals.sort(compare_individuals);
+
+	return this.individuals[0].get_fitness();
+}
+
+Population.prototype.draw = function(context)
+{
+	this.individuals[0].draw(context);
+}
+
+///////////////////////////////////////////////////////////
+function FitnessGraph(x, y, width, height)
+{
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+
+	this.history = [];
+}
+
+FitnessGraph.prototype.length = function(length)
+{
+	return this.history.length;
+}
+
+FitnessGraph.prototype.push = function(fitness)
+{
+	this.history.push(fitness);
+}
+
+FitnessGraph.prototype.clear = function(fitness)
+{
+	this.history = [];
+}
+
+FitnessGraph.prototype.draw = function(context)
+{
+	const sections = 10;
+	for(let i = 0; i < sections; ++i) {
+		context.save();
+		context.fillStyle = (i % 2 == 0) ? "lightgrey" : "silver";
+		context.fillRect(this.x + i * this.width / sections, this.y, this.width / sections, this.height);
+		context.restore();
+	}
+
+	context.beginPath();
+	context.moveTo(this.x, this.y);
+	const first_log_history = Math.log(this.history[0]) / Math.log(10);
+	for(let i=0; i < this.history.length; ++i) {
+		const log_history = Math.log(this.history[i]) / Math.log(10);
+		context.lineTo(this.x + i, this.y + this.height - (log_history / first_log_history) * this.height );
+	}
+	context.stroke();
+
+	context.save();
+	context.font = "12px sans-serif";
+	context.fillText(
+		"Generation: " + this.history.length * g_gens_tick + "  Fitness: " + (Math.trunc(this.history[this.history.length-1] * 100) / 100),
+		this.x, this.y + this.height - 10
+		);
+	context.restore();
+}
+
+///////////////////////////////////////////////////////////
+let g_pop_size = 0;
+let g_gens_tick = 0;
+let g_num_circles = 0;
+let g_mutation_spread = 0;
+let g_mutation_halflife = 0;
+
+function read_parameters() {
+	g_pop_size = parseFloat(document.getElementById("ID_POP_SIZE").value);
+	g_gens_tick = parseFloat(document.getElementById("ID_GENS_TICK").value);
+	g_num_circles = parseFloat(document.getElementById("ID_NUM_CIRCLES").value);
+	g_mutation_spread = parseFloat(document.getElementById("ID_MUTATION_SPREAD").value);
+	g_mutation_halflife = parseFloat(document.getElementById("ID_MUTATION_HALFLIFE").value);
+}
+read_parameters();
+
+let g_population = new Population();
+const g_fitnessgraph = new FitnessGraph(0, 500, canvas.width, 100);
+
+window.onload = function()
+{
+	const canvas = document.getElementById('canvas');
+	const context = canvas.getContext('2d');
+
+	(function drawFrame () {
+		window.requestAnimationFrame(drawFrame, canvas);
+		context.clearRect(0, 0, canvas.width, canvas.height);
+
+		if(g_fitnessgraph.length() < canvas.width) {
+			const halflife_factor = (g_mutation_halflife > 0)
+				? Math.pow(2, -g_fitnessgraph.length() / g_mutation_halflife) : 1;
+			const spread = g_mutation_spread * halflife_factor;
+			let fitness = 0;
+			for(let i=0; i < g_gens_tick; ++i) {
+				fitness = g_population.evolve(spread);
+			}
+			g_fitnessgraph.push(fitness);
+		}
+
+		g_population.draw(context);
+		g_fitnessgraph.draw(context);
+	}());
+}
+
+function onRestartButton()
+{
+	read_parameters();
+	g_population = new Population();
+	g_fitnessgraph.clear();
+}
+
+</script>
+</body>
+</html>
