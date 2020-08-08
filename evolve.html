@@ -9,6 +9,7 @@
 <script src="vec2.js"></script>
 <script src="random.js"></script>
 <script src="fitnessgraph.js"></script>
+<script src="population.js"></script>
 
 <canvas id="canvas" width="1024" height="600"></canvas>
 <br>
@@ -16,7 +17,6 @@
 <br>
 Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
 Generations/tick: <input type="number" id="ID_GENS_TICK" min="0" value="1"><br>
-Number of circles: <input type="number" id="ID_NUM_CIRCLES" min="0" value="3"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
 Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100">
@@ -25,20 +25,64 @@ Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUT
 
 let g_pop_size = 0;
 let g_gens_tick = 0;
-let g_num_circles = 0;
 let g_mutation_spread = 0;
 let g_mutation_halflife = 0;
 
 function read_parameters() {
 	g_pop_size = parseFloat(document.getElementById("ID_POP_SIZE").value);
 	g_gens_tick = parseFloat(document.getElementById("ID_GENS_TICK").value);
-	g_num_circles = parseFloat(document.getElementById("ID_NUM_CIRCLES").value);
 	g_mutation_spread = parseFloat(document.getElementById("ID_MUTATION_SPREAD").value);
 	g_mutation_halflife = parseFloat(document.getElementById("ID_MUTATION_HALFLIFE").value);
 }
 read_parameters();
 
+///////////////////////////////////////////////////////////
+function Individual()
+{
+	this.fitness = 0;
+	this.value = 0;
+}
+
+Individual.prototype.mutate = function(spread)
+{
+	this.value += spread * (gaussianRand() - 0.5);
+}
+
+Individual.prototype.randomize = function()
+{
+	this.value = Math.random() * 10000000;
+}
+
+Individual.prototype.copy = function(other)
+{
+	this.fitness = other.fitness;
+	this.value = other.value;
+}
+
+Individual.prototype.clone = function()
+{
+	const cloned = new Individual();
+	cloned.value = this.value;
+	return cloned;
+}
+
+Individual.prototype.evaluate = function()
+{
+	let fitness = 0;
+	fitness = Math.abs(this.value);
+	this.fitness = fitness;
+}
+
+Individual.prototype.get_fitness = function()
+{
+	return this.fitness;
+}
+
+///////////////////////////////////////////////////////////
 const g_fitnessgraph = new FitnessGraph( 0, 500, canvas.width, 100 );
+
+let g_population = new Population(g_pop_size, function() {return new Individual()});
+
 
 let frame = 1;
 window.onload = function()
@@ -51,7 +95,13 @@ window.onload = function()
 		context.clearRect( 0, 0, canvas.width, canvas.height );
 		frame += 1;
 
-		g_fitnessgraph.push( 1000000000 - 10000 * frame );
+		const halflife_factor = (g_mutation_halflife > 0)
+			? Math.pow(2, -frame / g_mutation_halflife) : 1;
+		const spread = g_mutation_spread * halflife_factor;
+		let fitness = 0;
+		fitness = g_population.evolve(spread);
+
+		g_fitnessgraph.push( fitness );
 		g_fitnessgraph.draw( context );
 	}());
 }
