@@ -6,8 +6,17 @@
 </head>
 <body>
 
+<script src="drawing.js"></script>
 <script src="vec2.js"></script>
 <script src="random.js"></script>
+<script src="worldmodel.js"></script>
+<script src="visualizer.js"></script>
+<script src="mouse.js"></script>
+<script src="neurallayer.js"></script>
+<script src="neuralnet.js"></script>
+<script src="pilotnet.js"></script>
+<script src="neuralpilot.js"></script>
+
 <script src="fitnessgraph.js"></script>
 <script src="population.js"></script>
 
@@ -40,36 +49,27 @@ read_parameters();
 function Individual()
 {
 	this.fitness = 0;
-	this.value = 0;
+	this.pilotNet = new PilotNet( [ 4, 4] );
 }
 
 Individual.prototype.mutate = function(spread)
 {
-	this.value += spread * (gaussianRand() - 0.5);
 }
 
 Individual.prototype.randomize = function()
 {
-	this.value = Math.random() * 10000000;
+	this.pilotNet.randomize();
 }
 
 Individual.prototype.copy = function(other)
 {
 	this.fitness = other.fitness;
-	this.value = other.value;
-}
-
-Individual.prototype.clone = function()
-{
-	const cloned = new Individual();
-	cloned.value = this.value;
-	return cloned;
+	this.pilotNet.copy(other.pilotNet);
 }
 
 Individual.prototype.evaluate = function()
 {
 	let fitness = 0;
-	fitness = Math.abs(this.value);
 	this.fitness = fitness;
 }
 

@@ -13,6 +13,11 @@ function PilotNet( innerLayers ) {
 	this._nnet = new NeuralNet( 4, allLayers );
 }
 
+PilotNet.prototype.copy = function(other) {
+	console.assert(this._inputs.length == other._inputs.length);
+	this._nnet.copy(other._nnet);
+}
+
 PilotNet.prototype.randomize = function() {
 	this._nnet.randomize();
 }

@@ -18,6 +18,13 @@ function NeuralNet( nInputs, layersList ) {
 	}
 }
 
+NeuralNet.prototype.copy = function(other) {
+	console.assert(this._layers.length == other._layers.length);
+	for( let i = 0; i < this._layers.length; ++i ) {
+		this._layers[i].copy(other._layers[i]);
+	}
+}
+
 NeuralNet.prototype.randomize = function() {
 	for( let i = 0; i < this._layers.length; ++i ) {
 		this._layers[ i ].randomize();

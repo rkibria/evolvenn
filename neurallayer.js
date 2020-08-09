@@ -12,6 +12,16 @@ function NeuralLayer( nInputs, nNeurons ) {
 	this.outputs = new Array( nNeurons ).fill( 0 );
 }
 
+NeuralLayer.prototype.copy = function(other) {
+	this.nInputs = other.nInputs;
+	this.nNeurons = other.nNeurons;
+	console.assert(this.weights.length == other.weights.length);
+	console.assert(this.outputs.length == other.outputs.length);
+	for(let i = 0; i < this.weights.length; ++i) {
+		this.weights[ i ] = other.weights[ i ];
+	}
+}
+
 NeuralLayer.prototype.randomize = function() {
 	this.bias = Math.random() - 0.5;
 	for(let i = 0; i < this.weights.length; ++i) {
