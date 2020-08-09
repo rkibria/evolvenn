@@ -46,6 +46,11 @@ function read_parameters() {
 read_parameters();
 
 ///////////////////////////////////////////////////////////
+
+// Re-use these for every individual
+const g_accel = new Vec2();
+const g_model = new WorldModel();
+
 function Individual()
 {
 	this.fitness = 0;
@@ -70,6 +75,13 @@ Individual.prototype.copy = function(other)
 Individual.prototype.evaluate = function()
 {
 	let fitness = 0;
+	g_model.particle.pos.randomInUnitDisk().multiplyScalar( 300 );
+	g_model.particle.vel.randomInUnitDisk().multiplyScalar( 10 );
+	for(let time = 0; time < 5 * 60; ++time) {
+		g_accel.clear();
+		this.pilotNet.run( g_accel, g_model );
+		g_model.run( g_accel );
+	}
 	this.fitness = fitness;
 }
 
