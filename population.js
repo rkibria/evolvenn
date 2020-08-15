@@ -23,6 +23,9 @@ function Population(pop_size, idv_factory)
 	this.individuals.sort(compare_individuals);
 }
 
+/* Returns best fitness this generation
+@param spread
+*/
 Population.prototype.evolve = function(spread)
 {
 	const half = Math.trunc(this.individuals.length / 2)

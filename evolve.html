@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Evolving Circles</title>
+<title>Pilot network evolution</title>
 </head>
 <body>
 
@@ -47,18 +47,31 @@ read_parameters();
 
 ///////////////////////////////////////////////////////////
 
+// Evaluate nets for all of these start positions and velocities
+// (changes every generation but is the same for all individuals in a generation)
+let g_start_conditions = [];
+for(let i=0; i < 3; ++i) {
+	g_start_conditions.push( { pos: new Vec2(), vel: new Vec2() } );
+}
+
 // Re-use these for every individual
 const g_accel = new Vec2();
 const g_model = new WorldModel();
 
+function makePilotNet()
+{
+	return new PilotNet( [ 4, 4] );
+}
+
 function Individual()
 {
 	this.fitness = 0;
-	this.pilotNet = new PilotNet( [ 4, 4] );
+	this.pilotNet = makePilotNet();
 }
 
 Individual.prototype.mutate = function(spread)
 {
+	// TODO
 }
 
 Individual.prototype.randomize = function()
@@ -75,13 +88,23 @@ Individual.prototype.copy = function(other)
 Individual.prototype.evaluate = function()
 {
 	let fitness = 0;
-	g_model.particle.pos.randomInUnitDisk().multiplyScalar( 300 );
-	g_model.particle.vel.randomInUnitDisk().multiplyScalar( 10 );
-	for(let time = 0; time < 5 * 60; ++time) {
-		g_accel.clear();
-		this.pilotNet.run( g_accel, g_model );
-		g_model.run( g_accel );
+
+	for(let i=0; i < g_start_conditions.length; ++i) {
+		// Set the start conditions
+		const start = g_start_conditions[i];
+		g_model.particle.pos.copy( start.pos );
+		g_model.particle.vel.copy( start.vel );
+
+		for(let time = 0; time < 5 * 60; ++time) {
+			g_accel.clear();
+			this.pilotNet.run( g_accel, g_model );
+			g_model.run( g_accel );
+		}
+
+		// fitness = sum of squared lengths of final positions and velocities
+		fitness += g_model.particle.pos.lengthSq() + g_model.particle.vel.lengthSq();
 	}
+
 	this.fitness = fitness;
 }
 
@@ -95,6 +118,17 @@ const g_fitnessgraph = new FitnessGraph( 0, 500, canvas.width, 100 );
 
 let g_population = new Population(g_pop_size, function() {return new Individual()});
 
+
+function createStartConditions()
+{
+	for(let i=0; i < g_start_conditions.length; ++i) {
+		const start = g_start_conditions[i];
+		start.pos.randomInUnitDisk().multiplyScalar( 300 );
+		start.vel.randomInUnitDisk().multiplyScalar( 10 );
+	}
+}
+
+createStartConditions();
 
 let frame = 1;
 window.onload = function()
@@ -110,8 +144,8 @@ window.onload = function()
 		const halflife_factor = (g_mutation_halflife > 0)
 			? Math.pow(2, -frame / g_mutation_halflife) : 1;
 		const spread = g_mutation_spread * halflife_factor;
-		let fitness = 0;
-		fitness = g_population.evolve(spread);
+		// createStartConditions();
+		const fitness = g_population.evolve(spread);
 
 		g_fitnessgraph.push( fitness );
 		g_fitnessgraph.draw( context );
