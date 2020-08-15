@@ -31,6 +31,12 @@ NeuralNet.prototype.randomize = function() {
 	}
 }
 
+NeuralNet.prototype.mutate = function(spread) {
+	for( let i = 0; i < this._layers.length; ++i ) {
+		this._layers[ i ].mutate(spread);
+	}
+}
+
 /*
 @param inputs Array containing the input values
 @return Outputs array

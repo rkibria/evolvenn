@@ -22,6 +22,10 @@ PilotNet.prototype.randomize = function() {
 	this._nnet.randomize();
 }
 
+PilotNet.prototype.mutate = function(spread) {
+	this._nnet.mutate(spread);
+}
+
 /*
 @param outAccel
 @param model

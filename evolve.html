@@ -71,7 +71,7 @@ function Individual()
 
 Individual.prototype.mutate = function(spread)
 {
-	// TODO
+	this.pilotNet.mutate(spread);
 }
 
 Individual.prototype.randomize = function()
@@ -88,6 +88,7 @@ Individual.prototype.copy = function(other)
 Individual.prototype.evaluate = function()
 {
 	let fitness = 0;
+	const simulationSeconds = 10;
 
 	for(let i=0; i < g_start_conditions.length; ++i) {
 		// Set the start conditions
@@ -95,7 +96,7 @@ Individual.prototype.evaluate = function()
 		g_model.particle.pos.copy( start.pos );
 		g_model.particle.vel.copy( start.vel );
 
-		for(let time = 0; time < 5 * 60; ++time) {
+		for(let time = 0; time < simulationSeconds * 60; ++time) {
 			g_accel.clear();
 			this.pilotNet.run( g_accel, g_model );
 			g_model.run( g_accel );

@@ -29,6 +29,18 @@ NeuralLayer.prototype.randomize = function() {
 	}
 }
 
+NeuralLayer.prototype.noise = function(spread)
+{
+	return spread * (gaussianRand() - 0.5);
+}
+
+NeuralLayer.prototype.mutate = function(spread) {
+	this.bias += this.noise(spread);
+	for(let i = 0; i < this.weights.length; ++i) {
+		this.weights[ i ] += this.noise(spread);
+	}
+}
+
 /*
 @param inputs List of numbers containing input values
 @return Outputs array
