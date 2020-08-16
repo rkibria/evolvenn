@@ -26,6 +26,10 @@ PilotNet.prototype.mutate = function(spread) {
 	this._nnet.mutate(spread);
 }
 
+PilotNet.prototype.toText = function() {
+	return this._nnet.toText();
+}
+
 /*
 @param outAccel
 @param model

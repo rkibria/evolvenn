@@ -37,6 +37,10 @@ NeuralNet.prototype.mutate = function(spread) {
 	}
 }
 
+NeuralNet.prototype.toText = function() {
+	return JSON.stringify(this._layers);
+}
+
 /*
 @param inputs Array containing the input values
 @return Outputs array

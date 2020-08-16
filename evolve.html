@@ -30,7 +30,7 @@ Generations/tick: <input type="number" id="ID_GENS_TICK" min="0" value="1"><br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
 Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100"><br>
 <p id="BEST_SOLUTION">Best solution:</p>
-<textarea id="BEST_SOLUTION_OUT" rows="20" cols="50">
+<textarea id="BEST_SOLUTION_OUT" rows="20" cols="120">
 NN definition
 </textarea>
 <br>
@@ -137,7 +137,7 @@ function createStartConditions()
 
 // createStartConditions();
 
-g_best_solution = { fitness: -1, generation: 0, solution: null };
+g_best_solution = { fitness: -1, generation: 0, solution: makePilotNet() };
 
 let frame = 1;
 window.onload = function()
@@ -162,9 +162,10 @@ window.onload = function()
 		if(g_best_solution.fitness == -1 || fitness < g_best_solution.fitness) {
 			g_best_solution.fitness = fitness;
 			g_best_solution.generation = g_fitnessgraph.generation;
+			g_best_solution.solution.copy(g_population.individuals[0].pilotNet);
 			document.getElementById("BEST_SOLUTION").innerHTML = "Best solution: fitness "
 				+ g_best_solution.fitness + " found at generation " + g_best_solution.generation;
-			document.getElementById("BEST_SOLUTION_OUT").innerHTML = "values";
+			document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.toText();
 		}
 
 	}());
