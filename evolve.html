@@ -20,7 +20,7 @@
 <script src="fitnessgraph.js"></script>
 <script src="population.js"></script>
 
-<canvas id="canvas" width="1024" height="600"></canvas>
+<canvas id="canvas" width="1024" height="100"></canvas>
 <br>
 <button onclick="onRestartButton()">Restart</button>
 <br>
@@ -28,7 +28,13 @@ Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
 Generations/tick: <input type="number" id="ID_GENS_TICK" min="0" value="1"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
-Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100">
+Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100"><br>
+<p id="BEST_SOLUTION">Best solution:</p>
+<textarea id="BEST_SOLUTION_OUT" rows="20" cols="50">
+NN definition
+</textarea>
+<br>
+<br>
 
 <script>
 
@@ -115,7 +121,7 @@ Individual.prototype.get_fitness = function()
 }
 
 ///////////////////////////////////////////////////////////
-const g_fitnessgraph = new FitnessGraph( 0, 500, canvas.width, 100 );
+const g_fitnessgraph = new FitnessGraph( 0, 0, canvas.width, 100 );
 
 let g_population = new Population(g_pop_size, function() {return new Individual()});
 
@@ -130,6 +136,8 @@ function createStartConditions()
 }
 
 // createStartConditions();
+
+g_best_solution = { fitness: -1, generation: 0, solution: null };
 
 let frame = 1;
 window.onload = function()
@@ -150,6 +158,15 @@ window.onload = function()
 
 		g_fitnessgraph.push( fitness );
 		g_fitnessgraph.draw( context );
+
+		if(g_best_solution.fitness == -1 || fitness < g_best_solution.fitness) {
+			g_best_solution.fitness = fitness;
+			g_best_solution.generation = g_fitnessgraph.generation;
+			document.getElementById("BEST_SOLUTION").innerHTML = "Best solution: fitness "
+				+ g_best_solution.fitness + " found at generation " + g_best_solution.generation;
+			document.getElementById("BEST_SOLUTION_OUT").innerHTML = "values";
+		}
+
 	}());
 }
 
