@@ -30,6 +30,10 @@ PilotNet.prototype.toText = function() {
 	return this.nnet.toText();
 }
 
+PilotNet.prototype.fromText = function(text) {
+	this.nnet.fromText(text);
+}
+
 /*
 @param outAccel
 @param model

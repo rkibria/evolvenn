@@ -74,8 +74,8 @@ body {
 				<label for="ID_POS_Y" title="y position">y</label> <input type="number" id="ID_POS_Y" value=300><br>
 				<hr>
 				Network setup:<br>
-				<textarea id="ID_NET_SETUP" rows="5" cols="30">NN definition</textarea>
-				
+				<textarea id="ID_NET_SETUP" rows="5" cols="30">NN definition</textarea><br>
+				<button class="button button1" onclick="onLoadNetworkButton()">Load network</button><br>
 			</div>
 		</div>
 	</div>
@@ -91,7 +91,7 @@ const mouseclick = captureMouseclick(canvas);
 
 const pilotNet = new PilotNet( [ 4, 4] );
 pilotNet.randomize();
-document.getElementById("ID_NET_SETUP").innerHTML = pilotNet.nnet.toText();
+document.getElementById("ID_NET_SETUP").value = pilotNet.nnet.toText();
 const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), 10, 10, 780 ), pilotNet );
 
 window.onload = function() {
@@ -121,6 +121,10 @@ function onSetPosButton() {
 	const y = parseFloat(document.getElementById("ID_POS_Y").value);
 	g_pilot.visualizer.model.particle.pos.set(x, y);
 	g_pilot.visualizer.model.particle.vel.clear();
+}
+
+function onLoadNetworkButton() {
+	g_pilot.pilotNet.fromText(document.getElementById("ID_NET_SETUP").value);
 }
 
 </script>

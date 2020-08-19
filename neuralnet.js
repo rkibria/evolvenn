@@ -41,6 +41,13 @@ NeuralNet.prototype.toText = function() {
 	return JSON.stringify(this._layers);
 }
 
+NeuralNet.prototype.fromText = function(text) {
+	const rawArray = JSON.parse(text);
+	for(let i = 0; i < rawArray.length; ++i) {
+		Object.assign(this._layers[i], rawArray[i]);
+	}
+}
+
 /*
 @param inputs Array containing the input values
 @return Outputs array
