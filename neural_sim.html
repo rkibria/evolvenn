@@ -67,7 +67,10 @@ body {
 	<div class='child float-left-child'>
 		<div class='parent'>
 			<div class='child float-left-child'>
-				<button class="button button1" onclick="onResetButton()">Reset</button><br>
+				<button class="button button1" onclick="onRandomizePosButton()">Randomize pos.</button><br>
+				<hr>
+				Network setup:<br>
+				<textarea id="NET_SETUP" rows="5" cols="30">NN definition</textarea>
 			</div>
 		</div>
 	</div>
@@ -83,6 +86,7 @@ const mouseclick = captureMouseclick(canvas);
 
 const pilotNet = new PilotNet( [ 4, 4] );
 pilotNet.randomize();
+document.getElementById("NET_SETUP").innerHTML = pilotNet.nnet.toText();
 const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), 10, 10, 780 ), pilotNet );
 
 window.onload = function() {
@@ -102,7 +106,7 @@ window.onload = function() {
 	}());
 }
 
-function onResetButton() {
+function onRandomizePosButton() {
 	g_pilot.reset();
 }
 
