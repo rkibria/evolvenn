@@ -6,28 +6,28 @@
 @param innerLayers Array of neuron counts for each hidden layer (without the output layer)
 */
 function PilotNet( innerLayers ) {
-	this._inputs = new Array( 4 ).fill( 0 );
+	this.inputs = new Array( 4 ).fill( 0 );
 
 	const allLayers = innerLayers.slice();
 	allLayers.push( 2 );
-	this._nnet = new NeuralNet( 4, allLayers );
+	this.nnet = new NeuralNet( 4, allLayers );
 }
 
 PilotNet.prototype.copy = function(other) {
-	console.assert(this._inputs.length == other._inputs.length);
-	this._nnet.copy(other._nnet);
+	console.assert(this.inputs.length == other.inputs.length);
+	this.nnet.copy(other.nnet);
 }
 
 PilotNet.prototype.randomize = function() {
-	this._nnet.randomize();
+	this.nnet.randomize();
 }
 
 PilotNet.prototype.mutate = function(spread) {
-	this._nnet.mutate(spread);
+	this.nnet.mutate(spread);
 }
 
 PilotNet.prototype.toText = function() {
-	return this._nnet.toText();
+	return this.nnet.toText();
 }
 
 /*
@@ -35,12 +35,12 @@ PilotNet.prototype.toText = function() {
 @param model
 */
 PilotNet.prototype.run = function( outAccel, model ) {
-	this._inputs[ 0 ] = model.particle.pos.x;
-	this._inputs[ 1 ] = model.particle.pos.y;
-	this._inputs[ 2 ] = model.particle.vel.x;
-	this._inputs[ 3 ] = model.particle.vel.y;
+	this.inputs[ 0 ] = model.particle.pos.x;
+	this.inputs[ 1 ] = model.particle.pos.y;
+	this.inputs[ 2 ] = model.particle.vel.x;
+	this.inputs[ 3 ] = model.particle.vel.y;
 
-	const outputs = this._nnet.run( this._inputs );
+	const outputs = this.nnet.run( this.inputs );
 
 	const MAX_ACCEL = 0.1;
 	// length/angle interpretation
