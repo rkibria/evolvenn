@@ -9,12 +9,6 @@ function NeuralPilot( visualizer, pilotNet ) {
 	this.pilotNet = pilotNet;
 
 	this.accel = new Vec2();
-	this.reset();
-}
-
-NeuralPilot.prototype.reset = function() {
-	this.visualizer.model.particle.pos.randomInUnitDisk().multiplyScalar( 300 );
-	this.visualizer.model.particle.vel.randomInUnitDisk().multiplyScalar( 10 );
 }
 
 /*
