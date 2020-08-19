@@ -14,11 +14,13 @@ function NeuralPilot( visualizer, pilotNet ) {
 /*
 	Run model and optionally visualize in context ctx
 */
-NeuralPilot.prototype.run = function( ctx = null ) {
+NeuralPilot.prototype.run = function( ctx = null, doRunModel = true ) {
 	this.accel.clear();
 
-	this.pilotNet.run( this.accel, this.visualizer.model );
-	this.visualizer.model.run( this.accel );
+	if( doRunModel ) {
+		this.pilotNet.run( this.accel, this.visualizer.model );
+		this.visualizer.model.run( this.accel );
+	}
 
 	if( ctx != null ) {
 		this.visualizer.draw( ctx, this.accel );

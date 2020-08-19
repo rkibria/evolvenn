@@ -67,8 +67,9 @@ body {
 	<div class='child float-left-child'>
 		<div class='parent'>
 			<div class='child float-left-child'>
-				<button class="button button1" onclick="onRandomizePosButton()">Randomize pos.</button><br>
+				<button class="button button1" onclick="onPauseButton()">Toggle pause</button><br>
 				<hr>
+				<button class="button button1" onclick="onRandomizePosButton()">Randomize pos.</button><br>
 				<button class="button button1" onclick="onSetPosButton()">Set pos.</button><br>
 				<label for="ID_POS_X" title="x position">x</label> <input type="number" id="ID_POS_X" value=0><br>
 				<label for="ID_POS_Y" title="y position">y</label> <input type="number" id="ID_POS_Y" value=300><br>
@@ -94,6 +95,8 @@ pilotNet.randomize();
 document.getElementById("ID_NET_SETUP").value = pilotNet.nnet.toText();
 const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), 10, 10, 780 ), pilotNet );
 
+let g_paused = false;
+
 window.onload = function() {
 	const ctx = canvas.getContext('2d');
 	ctx.fillStyle = "black";
@@ -104,7 +107,7 @@ window.onload = function() {
 		ctx.clearRect(0, 0, canvasW, canvasH);
 		// const t0 = performance.now();
 
-		g_pilot.run(ctx);
+		g_pilot.run(ctx, !g_paused);
 
 		// const t1 = performance.now();
 		// console.log((t1 - t0) + " ms");
@@ -125,6 +128,10 @@ function onSetPosButton() {
 
 function onLoadNetworkButton() {
 	g_pilot.pilotNet.fromText(document.getElementById("ID_NET_SETUP").value);
+}
+
+function onPauseButton() {
+	g_paused = !g_paused;
 }
 
 </script>
