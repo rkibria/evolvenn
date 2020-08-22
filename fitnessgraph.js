@@ -31,6 +31,7 @@ FitnessGraph.prototype.push = function( fitness )
 FitnessGraph.prototype.clear = function()
 {
 	this.history = [];
+	this.generation = 0;
 }
 
 FitnessGraph.prototype.draw = function( ctx )

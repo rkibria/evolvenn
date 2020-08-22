@@ -107,7 +107,8 @@ Individual.prototype.evaluate = function()
 			this.pilotNet.run( g_accel, g_model );
 			g_model.run( g_accel );
 			// fitness algorithm B = sum of lengths of current positions and velocities and acceleration
-			fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + g_accel.length();
+			const accelLen = g_accel.length();
+			fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + accelLen + (accelLen > 0.01 ? 1 : 0 );
 		}
 
 		// fitness algorithm A = sum of squared lengths of final positions and velocities
@@ -125,8 +126,11 @@ Individual.prototype.get_fitness = function()
 ///////////////////////////////////////////////////////////
 const g_fitnessgraph = new FitnessGraph( 0, 0, canvas.width, 100 );
 
-let g_population = new Population(g_pop_size, function() {return new Individual()});
+function makePopulation() {
+	return new Population(g_pop_size, function() {return new Individual()});
+}
 
+let g_population = makePopulation();
 
 function createStartConditions()
 {
@@ -139,7 +143,11 @@ function createStartConditions()
 
 // createStartConditions();
 
-g_best_solution = { fitness: -1, generation: 0, solution: makePilotNet() };
+function initBestSolution() {
+	return { fitness: -1, generation: 0, solution: makePilotNet() };
+}
+
+g_best_solution = initBestSolution();
 
 let frame = 1;
 window.onload = function()
@@ -175,7 +183,11 @@ window.onload = function()
 
 function onRestartButton()
 {
+	read_parameters();
 	g_fitnessgraph.clear();
+	frame = 1;
+	g_population = makePopulation();
+	g_best_solution = initBestSolution();
 }
 
 </script>
