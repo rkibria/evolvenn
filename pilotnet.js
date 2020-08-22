@@ -53,10 +53,19 @@ PilotNet.prototype.run = function( outAccel, model ) {
 	// outAccel.setLengthAngle( 1, accelAngle ).multiplyScalar( accelLen );
 
 	// direction interpretation: map each value to an axis
-	let dx = outputs[ 0 ] - 1;
-	dx = Math.min( dx, 1 ) * MAX_ACCEL / Math.sqrt(2);
-	let dy = outputs[ 1 ] - 1;
-	dy = Math.min( dy, 1 ) * MAX_ACCEL / Math.sqrt(2);
+	// let dx = outputs[ 0 ] - 1;
+	// dx = Math.min( dx, 1 ) * MAX_ACCEL / Math.sqrt(2);
+	// let dy = outputs[ 1 ] - 1;
+	// dy = Math.min( dy, 1 ) * MAX_ACCEL / Math.sqrt(2);
+	// outAccel.set( dx, dy );
+
+	// "axial" interpretation
+	const upValue = outputs[ 0 ];
+	const downValue = outputs[ 1 ];
+	const totalPosYValue = upValue - downValue;
+	let dx = 0;
+	let dy = totalPosYValue;
+	dy = Math.min( dy * 0.1, 1 ) * MAX_ACCEL / Math.sqrt(2);
 	outAccel.set( dx, dy );
 
 };
