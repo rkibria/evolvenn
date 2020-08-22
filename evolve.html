@@ -28,7 +28,7 @@ Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
 Generations/tick: <input type="number" id="ID_GENS_TICK" min="0" value="1"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
-Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100"><br>
+Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="200"><br>
 <p id="BEST_SOLUTION">Best solution:</p>
 <textarea id="BEST_SOLUTION_OUT" rows="20" cols="120">
 NN definition
@@ -106,10 +106,12 @@ Individual.prototype.evaluate = function()
 			g_accel.clear();
 			this.pilotNet.run( g_accel, g_model );
 			g_model.run( g_accel );
+			// fitness algorithm B = sum of lengths of current positions and velocities and acceleration
+			fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + g_accel.length();
 		}
 
-		// fitness = sum of squared lengths of final positions and velocities
-		fitness += g_model.particle.pos.lengthSq() + g_model.particle.vel.lengthSq();
+		// fitness algorithm A = sum of squared lengths of final positions and velocities
+		// fitness += g_model.particle.pos.lengthSq() + g_model.particle.vel.lengthSq();
 	}
 
 	this.fitness = fitness;
