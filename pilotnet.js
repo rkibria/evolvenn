@@ -60,12 +60,14 @@ PilotNet.prototype.run = function( outAccel, model ) {
 	// outAccel.set( dx, dy );
 
 	// "axial" interpretation
-	const upValue = outputs[ 0 ];
-	const downValue = outputs[ 1 ];
+	let upValue = outputs[ 0 ];
+	let downValue = outputs[ 1 ];
+	upValue = Math.sqrt(upValue)
+	downValue = Math.sqrt(downValue)
 	const totalPosYValue = upValue - downValue;
 	let dx = 0;
 	let dy = totalPosYValue;
-	dy = Math.min( dy * 0.1, 1 ) * MAX_ACCEL / Math.sqrt(2);
+	dy = Math.min( dy * 1, 1 ) * MAX_ACCEL / Math.sqrt(2);
 	outAccel.set( dx, dy );
 
 };
