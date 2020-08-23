@@ -39,10 +39,14 @@ PilotNet.prototype.fromText = function(text) {
 @param model
 */
 PilotNet.prototype.run = function( outAccel, model ) {
-	this.inputs[ 0 ] = model.particle.pos.x;
-	this.inputs[ 1 ] = model.particle.pos.y;
-	this.inputs[ 2 ] = model.particle.vel.x;
-	this.inputs[ 3 ] = model.particle.vel.y;
+	function inputScale(i) {
+		return Math.sign(i) * Math.log(Math.abs(i) + 1);
+	}
+
+	this.inputs[ 0 ] = inputScale(model.particle.pos.x);
+	this.inputs[ 1 ] = inputScale(model.particle.pos.y);
+	this.inputs[ 2 ] = inputScale(model.particle.vel.x);
+	this.inputs[ 3 ] = inputScale(model.particle.vel.y);
 
 	const outputs = this.nnet.run( this.inputs );
 
@@ -62,12 +66,21 @@ PilotNet.prototype.run = function( outAccel, model ) {
 	// "axial" interpretation
 	let upValue = outputs[ 0 ];
 	let downValue = outputs[ 1 ];
-	upValue = Math.sqrt(upValue)
-	downValue = Math.sqrt(downValue)
+
+	// upValue = Math.sqrt(upValue)
+	// downValue = Math.sqrt(downValue)
+
+	function outputScale(i) {
+		return Math.log(Math.max(0, i) + 1);
+	}
+
+	upValue = outputScale(upValue);
+	downValue = outputScale(downValue);
+
 	const totalPosYValue = upValue - downValue;
 	let dx = 0;
 	let dy = totalPosYValue;
-	dy = Math.min( dy * 1, 1 ) * MAX_ACCEL / Math.sqrt(2);
+	dy = Math.sign(dy) * Math.min( Math.abs(dy * 1), 1 ) * MAX_ACCEL / Math.sqrt(2);
 	outAccel.set( dx, dy );
 
 };
