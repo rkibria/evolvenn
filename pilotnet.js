@@ -9,7 +9,7 @@ function PilotNet( innerLayers ) {
 	this.inputs = new Array( 4 ).fill( 0 );
 
 	const allLayers = innerLayers.slice();
-	allLayers.push( 2 );
+	allLayers.push( 4 );
 	this.nnet = new NeuralNet( 4, allLayers );
 }
 
@@ -64,25 +64,21 @@ PilotNet.prototype.run = function( outAccel, model ) {
 	// outAccel.set( dx, dy );
 
 	// "axial" interpretation
-	let upValue = outputs[ 0 ];
-	let downValue = outputs[ 1 ];
+	function getAxisOutputValue(upValue, downValue) {
+		function outputScale(i) {
+			return Math.log(Math.max(0, i) + 1);
+		}
 
-	// upValue = Math.sqrt(upValue)
-	// downValue = Math.sqrt(downValue)
+		upValue = outputScale(upValue);
+		downValue = outputScale(downValue);
+		const totalPosValue = upValue - downValue;
 
-	function outputScale(i) {
-		return Math.log(Math.max(0, i) + 1);
+		let dd = totalPosValue;
+		dd = Math.sign(dd) * Math.min( Math.abs(dd * 1), 1 ) * MAX_ACCEL / Math.sqrt(2);
+		return dd;
 	}
 
-	upValue = outputScale(upValue);
-	downValue = outputScale(downValue);
-
-	const totalPosYValue = upValue - downValue;
-	let dx = 0;
-	let dy = totalPosYValue;
-	dy = Math.sign(dy) * Math.min( Math.abs(dy * 1), 1 ) * MAX_ACCEL / Math.sqrt(2);
-	outAccel.set( dx, dy );
-
+	outAccel.set( getAxisOutputValue(outputs[ 0 ], outputs[ 1 ]), getAxisOutputValue(outputs[ 2 ], outputs[ 3 ]) );
 }
 
 function makePilotNet()
