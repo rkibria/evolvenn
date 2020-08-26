@@ -24,7 +24,7 @@
 <br>
 <button onclick="onRestartButton()">Restart</button>
 <br>
-Population size: <input type="number" id="ID_POP_SIZE" min="0" value="100"><br>
+Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
 Generations/tick: <input type="number" id="ID_GENS_TICK" min="0" value="1"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
@@ -57,11 +57,15 @@ read_parameters();
 // (changes every generation but is the same for all individuals in a generation)
 let g_start_conditions = [];
 g_start_conditions.push( { pos: new Vec2(0, 300), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(0, 150), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(0, -150), vel: new Vec2(0, 0) } );
-// g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
-// g_start_conditions.push( { pos: new Vec2(-200, -200), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(100, 100), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(0, 150), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(0, -150), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(150, 0), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(-300, 0), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(-150, 0), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(-150, -150), vel: new Vec2(0, 0) } );
 
 // Re-use these for every individual
 const g_accel = new Vec2();

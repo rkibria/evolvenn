@@ -79,6 +79,10 @@ PilotNet.prototype.run = function( outAccel, model ) {
 	}
 
 	outAccel.set( getAxisOutputValue(outputs[ 0 ], outputs[ 1 ]), getAxisOutputValue(outputs[ 2 ], outputs[ 3 ]) );
+
+	// if(outAccel.length() <= 0.01) {
+		// outAccel.clear();
+	// }
 }
 
 function makePilotNet()
