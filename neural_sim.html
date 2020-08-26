@@ -90,7 +90,7 @@ const canvasW = canvas.scrollWidth, canvasH = canvas.scrollHeight;
 const mouse = captureMouse(canvas);
 const mouseclick = captureMouseclick(canvas);
 
-const pilotNet = new PilotNet( [ 4, 4] );
+const pilotNet = makePilotNet();
 pilotNet.randomize();
 document.getElementById("ID_NET_SETUP").value = pilotNet.nnet.toText();
 const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), 10, 10, 780 ), pilotNet );

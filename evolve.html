@@ -24,7 +24,7 @@
 <br>
 <button onclick="onRestartButton()">Restart</button>
 <br>
-Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
+Population size: <input type="number" id="ID_POP_SIZE" min="0" value="100"><br>
 Generations/tick: <input type="number" id="ID_GENS_TICK" min="0" value="1"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
@@ -66,11 +66,6 @@ g_start_conditions.push( { pos: new Vec2(0, -150), vel: new Vec2(0, 0) } );
 // Re-use these for every individual
 const g_accel = new Vec2();
 const g_model = new WorldModel();
-
-function makePilotNet()
-{
-	return new PilotNet( [ 4, 4] );
-}
 
 function Individual()
 {

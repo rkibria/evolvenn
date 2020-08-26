@@ -83,4 +83,9 @@ PilotNet.prototype.run = function( outAccel, model ) {
 	dy = Math.sign(dy) * Math.min( Math.abs(dy * 1), 1 ) * MAX_ACCEL / Math.sqrt(2);
 	outAccel.set( dx, dy );
 
-};
+}
+
+function makePilotNet()
+{
+	return new PilotNet( [ 4, 4] );
+}
