@@ -87,5 +87,5 @@ PilotNet.prototype.run = function( outAccel, model ) {
 
 function makePilotNet()
 {
-	return new PilotNet( [ 4, 4] );
+	return new PilotNet( [ 4, 4, 4 ] );
 }

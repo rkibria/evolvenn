@@ -22,6 +22,8 @@
 
 <canvas id="canvas" width="1024" height="100"></canvas>
 <br>
+<div id="RUNING_TIME_TEXT"></div><br>
+<div id="PROGRESS_TEXT"></div><br>
 <button onclick="onRestartButton()">Restart</button>
 <br>
 Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
@@ -37,6 +39,8 @@ NN definition
 <br>
 
 <script>
+
+const g_start_time = new Date();
 
 let g_pop_size = 0;
 let g_gens_tick = 0;
@@ -66,6 +70,8 @@ g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(-300, 0), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(-150, 0), vel: new Vec2(0, 0) } );
 g_start_conditions.push( { pos: new Vec2(-150, -150), vel: new Vec2(0, 0) } );
+
+let g_current_start_condition = 0;
 
 // Re-use these for every individual
 const g_accel = new Vec2();
@@ -110,19 +116,14 @@ Individual.prototype.evaluate = function()
 			g_model.run( g_accel );
 			// fitness algorithm B = sum of lengths of current positions and velocities and acceleration
 			const accelLen = g_accel.length();
-			fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + accelLen + (accelLen > 0.01 ? 1 : 0 );
+			fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + accelLen;
 		}
 
 		// fitness algorithm A = sum of squared lengths of final positions and velocities
 		// fitness += g_model.particle.pos.lengthSq() + g_model.particle.vel.lengthSq();
 	}
 
-	this.fitness = fitness;
-}
-
-Individual.prototype.get_fitness = function()
-{
-	return this.fitness;
+	this.fitness += fitness;
 }
 
 ///////////////////////////////////////////////////////////
@@ -151,7 +152,7 @@ function initBestSolution() {
 
 g_best_solution = initBestSolution();
 
-let frame = 1;
+let generation = 1;
 window.onload = function()
 {
 	const canvas = document.getElementById('canvas');
@@ -160,25 +161,45 @@ window.onload = function()
 	(function drawFrame () {
 		window.requestAnimationFrame( drawFrame, canvas );
 		context.clearRect( 0, 0, canvas.width, canvas.height );
-		frame += 1;
+
+		const endTime = new Date();
+		const secondsElapsed = Math.trunc((endTime - g_start_time) / 1000);
+		document.getElementById("RUNING_TIME_TEXT").innerHTML = "Running time: " + Math.trunc(secondsElapsed / 60)
+			+ " min " + Math.trunc(secondsElapsed % 60) + " sec";
+
+		document.getElementById("PROGRESS_TEXT").innerHTML = "Evaluating start condition "
+			+ (g_current_start_condition + 1) + " / " + g_start_conditions.length;
 
 		const halflife_factor = (g_mutation_halflife > 0)
-			? Math.pow(2, -frame / g_mutation_halflife) : 1;
+			? Math.pow(2, -generation / g_mutation_halflife) : 1;
 		const spread = g_mutation_spread * halflife_factor;
 		// createStartConditions();
-		const fitness = g_population.evolve(spread);
 
-		g_fitnessgraph.push( fitness );
+		if(g_current_start_condition == 0) {
+			g_population.clearFitnesses();
+		}
+
+		g_population.evaluate();
+
+		if(g_current_start_condition == g_start_conditions.length - 1) {
+			generation += 1;
+
+			const fitness = g_population.evolve(spread);
+			g_fitnessgraph.push( fitness );
+
+			if(g_best_solution.fitness == -1 || fitness < g_best_solution.fitness) {
+				g_best_solution.fitness = fitness;
+				g_best_solution.generation = g_fitnessgraph.generation;
+				g_best_solution.solution.copy(g_population.individuals[0].pilotNet);
+				document.getElementById("BEST_SOLUTION").innerHTML = "Best solution: fitness "
+					+ g_best_solution.fitness + " found at generation " + g_best_solution.generation;
+				document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.toText();
+			}
+		}
+
 		g_fitnessgraph.draw( context );
 
-		if(g_best_solution.fitness == -1 || fitness < g_best_solution.fitness) {
-			g_best_solution.fitness = fitness;
-			g_best_solution.generation = g_fitnessgraph.generation;
-			g_best_solution.solution.copy(g_population.individuals[0].pilotNet);
-			document.getElementById("BEST_SOLUTION").innerHTML = "Best solution: fitness "
-				+ g_best_solution.fitness + " found at generation " + g_best_solution.generation;
-			document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.toText();
-		}
+		g_current_start_condition = ((g_current_start_condition + 1) % g_start_conditions.length);
 
 	}());
 }
@@ -187,7 +208,7 @@ function onRestartButton()
 {
 	read_parameters();
 	g_fitnessgraph.clear();
-	frame = 1;
+	generation = 1;
 	g_population = makePopulation();
 	g_best_solution = initBestSolution();
 }

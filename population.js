@@ -5,7 +5,7 @@
 
 function compare_individuals(a, b)
 {
-	return a.get_fitness() - b.get_fitness();
+	return a.fitness - b.fitness;
 }
 
 /*
@@ -23,11 +23,28 @@ function Population(pop_size, idv_factory)
 	this.individuals.sort(compare_individuals);
 }
 
+Population.prototype.clearFitnesses = function()
+{
+	for(let i = 0; i < this.individuals.length; ++i) {
+		this.individuals[i].fitness = 0;
+	}
+}
+
+Population.prototype.evaluate = function()
+{
+	for(let i = 0; i < this.individuals.length; ++i) {
+		this.individuals[i].evaluate();
+	}
+}
+
 /* Returns best fitness this generation
 @param spread
 */
 Population.prototype.evolve = function(spread)
 {
+	this.individuals.sort(compare_individuals);
+	const best = this.individuals[0].fitness;
+
 	const half = Math.trunc(this.individuals.length / 2)
 	for(let i = 0; i < half; ++i) {
 		const parent = this.individuals[i];
@@ -35,12 +52,8 @@ Population.prototype.evolve = function(spread)
 
 		offspring.copy(parent);
 		offspring.mutate(spread);
-		offspring.evaluate();
-
 		parent.mutate(spread);
-		parent.evaluate();
 	}
-	this.individuals.sort(compare_individuals);
 
-	return this.individuals[0].get_fitness();
+	return best;
 }
