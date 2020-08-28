@@ -23,8 +23,6 @@ html *
 <script src="random.js"></script>
 <script src="worldmodel.js"></script>
 <script src="visualizer.js"></script>
-<script src="mouse.js"></script>
-<script src="manualcontroller.js"></script>
 
 <div class='parent'>
 	<div class='child float-left-child'>
@@ -37,12 +35,36 @@ html *
 const canvas = document.getElementById('canvas');
 const canvasW = canvas.scrollWidth, canvasH = canvas.scrollHeight;
 
-const mouse = captureMouse(canvas);
-const mouseclick = captureMouseclick(canvas);
+function ManualController(visualizer) {
+	this.visualizer = visualizer;
+	this.accel = 0;
+	this.rot = 0;
+}
 
-const g_manualcontroller = new ManualController(
-	new Visualizer(new WorldModel(), 10, 10, 780),
-	mouse, mouseclick);
+/*
+	Run model and visualize in context ctx
+*/
+ManualController.prototype.run = function(ctx) {
+	this.visualizer.model.run(this.accel, this.rot);
+	this.visualizer.draw(ctx);
+	this.accel = 0;
+	this.rot = 0;
+}
+
+ManualController.prototype.keydown = function(e) {
+	if(e.keyCode == 87) { // W
+		this.accel = 0.01;
+	}
+	else if(e.keyCode == 65) { // A
+		this.rot = -0.001;
+	}
+	else if(e.keyCode == 68) { // D
+		this.rot = 0.001;
+	}
+}
+
+const g_manualcontroller = new ManualController(new Visualizer(new WorldModel(), 10, 10, 780));
+window.addEventListener('keydown', function(e) { g_manualcontroller.keydown(e); });
 
 window.onload = function() {
 	const ctx = canvas.getContext('2d');

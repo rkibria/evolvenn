@@ -15,7 +15,6 @@ function Visualizer(model, x, y, s) {
 	this.center = new Vec2(this.x + this.s/2, this.y + this.s/2);
 
 	this._accelArrow = new Vec2();
-	this._rocketAngle = 0;
 	this._rocketFrame = 0;
 }
 
@@ -23,10 +22,7 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null) {
 	ctx.save();
 	ctx.translate( x, y );
 
-	if( accel != null ) {
-		this._rocketAngle = Math.atan2( -accel.y, accel.x ) + Math.PI / 2;
-	}
-	ctx.rotate( this._rocketAngle );
+	ctx.rotate( this.model.particle.dir.angle() - Math.PI / 2 );
 
 	ctx.beginPath();
 	ctx.lineWidth = "1";
