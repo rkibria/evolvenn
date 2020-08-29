@@ -63,11 +63,11 @@ PilotNet.prototype.run = function( outputs, model ) {
 	const MAX_ACCEL = 0.1;
 	const MAX_ROT = 0.05;
 
-	function getRotOutput(upValue, downValue) {
-		function outputScale(i) {
-			return Math.log(Math.max(0, i) + 1);
-		}
+	function outputScale(i) {
+		return Math.log(Math.max(0, i) + 1);
+	}
 
+	function getRotOutput(upValue, downValue) {
 		upValue = outputScale(upValue);
 		downValue = outputScale(downValue);
 		const totalPosValue = upValue - downValue;
@@ -76,7 +76,7 @@ PilotNet.prototype.run = function( outputs, model ) {
 		return Math.sign(rawRot) * Math.min( Math.abs(rawRot), MAX_ROT );
 	}
 
-	const accel = Math.min(MAX_ACCEL, nnOutputs[0]);
+	const accel = Math.min(MAX_ACCEL, outputScale(nnOutputs[0]) * 0.01 );
 	const rot = getRotOutput(nnOutputs[1], nnOutputs[2]);
 
 	outputs[0] = accel;
