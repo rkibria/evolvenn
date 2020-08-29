@@ -33,10 +33,11 @@ PilotNet.prototype.randomize = function() {
 PilotNet.prototype.mutate = function(spread) {
 	this.nnet.mutate(spread);
 
-	this.rotScale += 0.00001 * (gaussianRand() - 0.5);
+	const scaleFactor = 0.001;
+	this.rotScale += scaleFactor * (gaussianRand() - 0.5);
 	this.rotScale = Math.max(0.001, this.rotScale);
 
-	this.accelScale += 0.00001 * (gaussianRand() - 0.5);
+	this.accelScale += scaleFactor * (gaussianRand() - 0.5);
 	this.accelScale = Math.max(0.001, this.accelScale);
 }
 

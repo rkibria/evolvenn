@@ -26,7 +26,7 @@
 <div id="PROGRESS_TEXT"></div><br>
 <button onclick="onRestartButton()">Restart</button>
 <br>
-Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
+Population size: <input type="number" id="ID_POP_SIZE" min="0" value="2000"><br>
 Generations/tick: <input type="number" id="ID_GENS_TICK" min="0" value="1"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
@@ -60,7 +60,7 @@ read_parameters();
 // Evaluate nets for all of these start positions and velocities
 // (changes every generation but is the same for all individuals in a generation)
 let g_start_conditions = [];
-g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(0, 300), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(100, 100), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, 150), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
@@ -115,7 +115,8 @@ Individual.prototype.evaluate = function()
 			const rot = g_net_outputs[1];
 			g_model.run( accel, rot );
 
-			fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + accel + rot;
+			const avl = Math.abs(g_model.particle.avl);
+			fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + avl*avl;
 		}
 	}
 

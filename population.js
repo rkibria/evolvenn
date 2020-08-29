@@ -25,14 +25,16 @@ function Population(pop_size, idv_factory)
 
 Population.prototype.clearFitnesses = function()
 {
-	for(let i = 0; i < this.individuals.length; ++i) {
+	const half = Math.trunc(this.individuals.length / 2)
+	for(let i = half; i < this.individuals.length; ++i) {
 		this.individuals[i].fitness = 0;
 	}
 }
 
 Population.prototype.evaluate = function()
 {
-	for(let i = 0; i < this.individuals.length; ++i) {
+	const half = Math.trunc(this.individuals.length / 2)
+	for(let i = half; i < this.individuals.length; ++i) {
 		this.individuals[i].evaluate();
 	}
 }
@@ -52,7 +54,7 @@ Population.prototype.evolve = function(spread)
 
 		offspring.copy(parent);
 		offspring.mutate(spread);
-		parent.mutate(spread);
+		// parent.mutate(spread);
 	}
 
 	return best;
