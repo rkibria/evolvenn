@@ -6,11 +6,14 @@
 @param innerLayers Array of neuron counts for each hidden layer (without the output layer)
 */
 function PilotNet( innerLayers ) {
-	this.inputs = new Array( 4 ).fill( 0 );
+	const nInputs = 7;
+	const nOutputs = 3;
+
+	this.inputs = new Array( nInputs ).fill( 0 );
 
 	const allLayers = innerLayers.slice();
-	allLayers.push( 4 );
-	this.nnet = new NeuralNet( 4, allLayers );
+	allLayers.push( nOutputs );
+	this.nnet = new NeuralNet( nInputs, allLayers );
 }
 
 PilotNet.prototype.copy = function(other) {
@@ -38,32 +41,27 @@ PilotNet.prototype.fromText = function(text) {
 @param outAccel
 @param model
 */
-PilotNet.prototype.run = function( outAccel, model ) {
+PilotNet.prototype.run = function( outputs, model ) {
 	function inputScale(i) {
+		// logarithmic scaling to avoid huge values
 		return Math.sign(i) * Math.log(Math.abs(i) + 1);
 	}
 
 	this.inputs[ 0 ] = inputScale(model.particle.pos.x);
 	this.inputs[ 1 ] = inputScale(model.particle.pos.y);
+
 	this.inputs[ 2 ] = inputScale(model.particle.vel.x);
 	this.inputs[ 3 ] = inputScale(model.particle.vel.y);
 
-	const outputs = this.nnet.run( this.inputs );
+	this.inputs[ 4 ] = model.particle.dir.x;
+	this.inputs[ 5 ] = model.particle.dir.y;
+
+	this.inputs[ 6 ] = model.particle.avl;
+
+	const nnOutputs = this.nnet.run( this.inputs );
 
 	const MAX_ACCEL = 0.1;
-	// length/angle interpretation
-	// const accelLen = Math.min( outputs[ 0 ], MAX_ACCEL );
-	// const accelAngle = outputs[ 1 ] * 2 * Math.PI;
-	// outAccel.setLengthAngle( 1, accelAngle ).multiplyScalar( accelLen );
 
-	// direction interpretation: map each value to an axis
-	// let dx = outputs[ 0 ] - 1;
-	// dx = Math.min( dx, 1 ) * MAX_ACCEL / Math.sqrt(2);
-	// let dy = outputs[ 1 ] - 1;
-	// dy = Math.min( dy, 1 ) * MAX_ACCEL / Math.sqrt(2);
-	// outAccel.set( dx, dy );
-
-	// "axial" interpretation
 	function getAxisOutputValue(upValue, downValue) {
 		function outputScale(i) {
 			return Math.log(Math.max(0, i) + 1);
@@ -78,14 +76,14 @@ PilotNet.prototype.run = function( outAccel, model ) {
 		return dd;
 	}
 
-	outAccel.set( getAxisOutputValue(outputs[ 0 ], outputs[ 1 ]), getAxisOutputValue(outputs[ 2 ], outputs[ 3 ]) );
+	const accel = nnOutputs[0];
+	const rot = getAxisOutputValue(nnOutputs[1], nnOutputs[2]);
 
-	// if(outAccel.length() <= 0.01) {
-		// outAccel.clear();
-	// }
+	outputs[0] = accel;
+	outputs[1] = rot;
 }
 
 function makePilotNet()
 {
-	return new PilotNet( [ 4, 4, 4 ] );
+	return new PilotNet( [ 7, 7, 7 ] );
 }

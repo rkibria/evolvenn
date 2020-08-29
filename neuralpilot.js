@@ -8,18 +8,18 @@ function NeuralPilot( visualizer, pilotNet ) {
 	this.visualizer = visualizer;
 	this.pilotNet = pilotNet;
 
-	this.accel = new Vec2();
+	this.outputs = [0, 0];
 }
 
 /*
 	Run model and optionally visualize in context ctx
 */
 NeuralPilot.prototype.run = function( ctx = null, doRunModel = true ) {
-	this.accel.clear();
-
 	if( doRunModel ) {
-		this.pilotNet.run( this.accel, this.visualizer.model );
-		this.visualizer.model.run( this.accel );
+		this.pilotNet.run( this.outputs, this.visualizer.model );
+		const accel = this.outputs[0];
+		const rot = this.outputs[1];
+		this.visualizer.model.run( accel, rot );
 	}
 
 	if( ctx != null ) {
