@@ -22,7 +22,7 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null) {
 	ctx.save();
 	ctx.translate( x, y );
 
-	ctx.rotate( this.model.particle.dir.angle() - Math.PI / 2 );
+	ctx.rotate( -(this.model.particle.dir.angle() - Math.PI / 2) );
 
 	ctx.beginPath();
 	ctx.lineWidth = "1";

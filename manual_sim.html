@@ -52,14 +52,14 @@ ManualController.prototype.run = function(ctx) {
 }
 
 ManualController.prototype.keydown = function(e) {
-	if(e.keyCode == 87) { // W
+	if(e.keyCode == 87) { // W: accelerate
 		this.accel = 0.01;
 	}
-	else if(e.keyCode == 65) { // A
-		this.rot = -0.001;
-	}
-	else if(e.keyCode == 68) { // D
+	else if(e.keyCode == 65) { // A: turn anti-clockwise
 		this.rot = 0.001;
+	}
+	else if(e.keyCode == 68) { // D: turn clockwise
+		this.rot = -0.001;
 	}
 }
 
