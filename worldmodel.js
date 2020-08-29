@@ -31,6 +31,13 @@ Particle.prototype.run = function(accel, rot) {
 	this.pos.add(this.vel);
 };
 
+Particle.prototype.reset = function(pos, vel) {
+	this.pos.copy( pos );
+	this.vel.copy( vel );
+	this.dir.set(0, 1);
+	this.avl = 0;
+}
+
 function WorldModel() {
 	this.particle = new Particle();
 }

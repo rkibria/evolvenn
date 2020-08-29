@@ -60,21 +60,21 @@ read_parameters();
 // Evaluate nets for all of these start positions and velocities
 // (changes every generation but is the same for all individuals in a generation)
 let g_start_conditions = [];
-g_start_conditions.push( { pos: new Vec2(0, 300), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(100, 100), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, 150), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, -150), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(150, 0), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(-300, 0), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(-150, 0), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(-150, -150), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(-150, -150), vel: new Vec2(0, 0) } );
 
 let g_current_start_condition = 0;
 
 // Re-use these for every individual
-const g_accel = new Vec2();
+const g_net_outputs = [0, 0];
 const g_model = new WorldModel();
 
 function Individual()
@@ -107,20 +107,14 @@ Individual.prototype.evaluate = function()
 	for(let i=0; i < g_start_conditions.length; ++i) {
 		// Set the start conditions
 		const start = g_start_conditions[i];
-		g_model.particle.pos.copy( start.pos );
-		g_model.particle.vel.copy( start.vel );
+		g_model.particle.reset( start.pos, start.vel );
 
 		for(let time = 0; time < simulationSeconds * 60; ++time) {
-			g_accel.clear();
-			this.pilotNet.run( g_accel, g_model );
-			g_model.run( g_accel );
-			// fitness algorithm B = sum of lengths of current positions and velocities and acceleration
-			const accelLen = g_accel.length();
-			fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + accelLen;
+			this.pilotNet.run( g_net_outputs, g_model );
+			g_model.run( g_net_outputs[0], g_net_outputs[1] );
+			// fitness = sum of lengths of current positions and velocities
+			fitness += g_model.particle.pos.length() + g_model.particle.vel.length();
 		}
-
-		// fitness algorithm A = sum of squared lengths of final positions and velocities
-		// fitness += g_model.particle.pos.lengthSq() + g_model.particle.vel.lengthSq();
 	}
 
 	this.fitness += fitness;

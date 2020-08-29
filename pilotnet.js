@@ -38,7 +38,7 @@ PilotNet.prototype.fromText = function(text) {
 }
 
 /*
-@param outAccel
+@param outputs 2-element vector [accel, rot]
 @param model
 */
 PilotNet.prototype.run = function( outputs, model ) {
@@ -50,8 +50,8 @@ PilotNet.prototype.run = function( outputs, model ) {
 	this.inputs[ 0 ] = inputScale(model.particle.pos.x);
 	this.inputs[ 1 ] = inputScale(model.particle.pos.y);
 
-	this.inputs[ 2 ] = inputScale(model.particle.vel.x);
-	this.inputs[ 3 ] = inputScale(model.particle.vel.y);
+	this.inputs[ 2 ] = model.particle.vel.x;
+	this.inputs[ 3 ] = model.particle.vel.y;
 
 	this.inputs[ 4 ] = model.particle.dir.x;
 	this.inputs[ 5 ] = model.particle.dir.y;
@@ -61,8 +61,9 @@ PilotNet.prototype.run = function( outputs, model ) {
 	const nnOutputs = this.nnet.run( this.inputs );
 
 	const MAX_ACCEL = 0.1;
+	const MAX_ROT = 0.05;
 
-	function getAxisOutputValue(upValue, downValue) {
+	function getRotOutput(upValue, downValue) {
 		function outputScale(i) {
 			return Math.log(Math.max(0, i) + 1);
 		}
@@ -71,13 +72,12 @@ PilotNet.prototype.run = function( outputs, model ) {
 		downValue = outputScale(downValue);
 		const totalPosValue = upValue - downValue;
 
-		let dd = totalPosValue;
-		dd = Math.sign(dd) * Math.min( Math.abs(dd * 1), 1 ) * MAX_ACCEL / Math.sqrt(2);
-		return dd;
+		let rawRot = totalPosValue * 0.01;
+		return Math.sign(rawRot) * Math.min( Math.abs(rawRot), MAX_ROT );
 	}
 
-	const accel = nnOutputs[0];
-	const rot = getAxisOutputValue(nnOutputs[1], nnOutputs[2]);
+	const accel = Math.min(MAX_ACCEL, nnOutputs[0]);
+	const rot = getRotOutput(nnOutputs[1], nnOutputs[2]);
 
 	outputs[0] = accel;
 	outputs[1] = rot;

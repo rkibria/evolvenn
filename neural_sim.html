@@ -122,8 +122,9 @@ function onRandomizePosButton() {
 function onSetPosButton() {
 	const x = parseFloat(document.getElementById("ID_POS_X").value);
 	const y = parseFloat(document.getElementById("ID_POS_Y").value);
-	g_pilot.visualizer.model.particle.pos.set(x, y);
-	g_pilot.visualizer.model.particle.vel.clear();
+	const pos = new Vec2(x, y);
+	const vel = new Vec2();
+	g_pilot.visualizer.model.particle.reset(pos, vel);
 }
 
 function onLoadNetworkButton() {
