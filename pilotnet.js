@@ -14,6 +14,9 @@ function PilotNet( innerLayers ) {
 	const allLayers = innerLayers.slice();
 	allLayers.push( nOutputs );
 	this.nnet = new NeuralNet( nInputs, allLayers );
+
+	this.rotScale = 0.01;
+	this.accelScale = 0.01;
 }
 
 PilotNet.prototype.copy = function(other) {
@@ -27,6 +30,12 @@ PilotNet.prototype.randomize = function() {
 
 PilotNet.prototype.mutate = function(spread) {
 	this.nnet.mutate(spread);
+
+	this.rotScale += 0.001 * (gaussianRand() - 0.5);
+	this.rotScale = Math.max(0.001, this.rotScale);
+
+	this.accelScale += 0.001 * (gaussianRand() - 0.5);
+	this.accelScale = Math.max(0.001, this.accelScale);
 }
 
 PilotNet.prototype.toText = function() {
@@ -67,17 +76,17 @@ PilotNet.prototype.run = function( outputs, model ) {
 		return Math.log(Math.max(0, i) + 1);
 	}
 
-	function getRotOutput(upValue, downValue) {
+	function getRotOutput(upValue, downValue, rotScale) {
 		upValue = outputScale(upValue);
 		downValue = outputScale(downValue);
 		const totalPosValue = upValue - downValue;
 
-		let rawRot = totalPosValue * 0.01;
+		let rawRot = totalPosValue * rotScale;
 		return Math.sign(rawRot) * Math.min( Math.abs(rawRot), MAX_ROT );
 	}
 
-	const accel = Math.min(MAX_ACCEL, outputScale(nnOutputs[0]) * 0.01 );
-	const rot = getRotOutput(nnOutputs[1], nnOutputs[2]);
+	const accel = Math.min(MAX_ACCEL, outputScale(nnOutputs[0]) * this.accelScale );
+	const rot = getRotOutput(nnOutputs[1], nnOutputs[2], this.rotScale);
 
 	outputs[0] = accel;
 	outputs[1] = rot;
