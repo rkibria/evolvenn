@@ -22,6 +22,8 @@ function PilotNet( innerLayers ) {
 PilotNet.prototype.copy = function(other) {
 	console.assert(this.inputs.length == other.inputs.length);
 	this.nnet.copy(other.nnet);
+	this.rotScale = other.rotScale;
+	this.accelScale = other.accelScale;
 }
 
 PilotNet.prototype.randomize = function() {
@@ -31,19 +33,27 @@ PilotNet.prototype.randomize = function() {
 PilotNet.prototype.mutate = function(spread) {
 	this.nnet.mutate(spread);
 
-	this.rotScale += 0.001 * (gaussianRand() - 0.5);
+	this.rotScale += 0.00001 * (gaussianRand() - 0.5);
 	this.rotScale = Math.max(0.001, this.rotScale);
 
-	this.accelScale += 0.001 * (gaussianRand() - 0.5);
+	this.accelScale += 0.00001 * (gaussianRand() - 0.5);
 	this.accelScale = Math.max(0.001, this.accelScale);
 }
 
 PilotNet.prototype.toText = function() {
-	return this.nnet.toText();
+	const serialObj = {
+		rotScale: this.rotScale,
+		accelScale: this.accelScale,
+		nnet: this.nnet.toText()
+	};
+	return JSON.stringify(serialObj);
 }
 
 PilotNet.prototype.fromText = function(text) {
-	this.nnet.fromText(text);
+	const rawObject = JSON.parse(text);
+	this.nnet.fromText(rawObject.nnet);
+	this.rotScale = rawObject.rotScale;
+	this.accelScale = rawObject.accelScale;
 }
 
 /*
@@ -77,12 +87,25 @@ PilotNet.prototype.run = function( outputs, model ) {
 	}
 
 	function getRotOutput(upValue, downValue, rotScale) {
-		upValue = outputScale(upValue);
-		downValue = outputScale(downValue);
-		const totalPosValue = upValue - downValue;
+		// upValue = outputScale(upValue);
+		// downValue = outputScale(downValue);
+		// const totalPosValue = upValue - downValue;
 
-		let rawRot = totalPosValue * rotScale;
-		return Math.sign(rawRot) * Math.min( Math.abs(rawRot), MAX_ROT );
+		// let rawRot = totalPosValue * rotScale;
+		// return Math.sign(rawRot) * Math.min( Math.abs(rawRot), MAX_ROT );
+
+		// Bigger value determines polarity and strength of rotation, smaller value is ignored
+		let rot = 0;
+		let sign = 1;
+		if(upValue >= downValue) {
+			rot = upValue;
+		}
+		else {
+			rot = downValue;
+			sign = -1;
+		}
+		rot = outputScale(rot) * sign * rotScale;
+		return rot;
 	}
 
 	const accel = Math.min(MAX_ACCEL, outputScale(nnOutputs[0]) * this.accelScale );
