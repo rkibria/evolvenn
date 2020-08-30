@@ -57,12 +57,13 @@ read_parameters();
 // Evaluate nets for all of these start positions and velocities
 // (changes every generation but is the same for all individuals in a generation)
 let g_start_conditions = [];
-g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(0, 0), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(100, 100), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, 150), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, -150), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(150, 0), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(-300, 0), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(-150, 0), vel: new Vec2(0, 0) } );
@@ -115,8 +116,13 @@ Individual.prototype.evaluate = function()
 		const rot = g_net_outputs[1];
 		g_model.run( accel, rot );
 
-		const avl = Math.abs(g_model.particle.avl);
-		fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + square(10 * avl);
+//		if(time >= (simulationSeconds - 1) * 60) {
+//			const avl = Math.abs(g_model.particle.avl);
+//			fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + (100 * avl);
+//		}
+
+		// Objective: Don't move, turn the rocket so it faces down
+		fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + Math.abs(g_model.particle.dir.angle() + 0.5 * Math.PI);
 	}
 
 	this.fitness += fitness;

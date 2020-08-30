@@ -1,3 +1,16 @@
+
+
+TRY:
+- nn inputs are state of rocket at last n timesteps
+-- state of rocket and own output?
+
+- fitness is only from the last 1 second of the run
+
+
+
+
+
+
 ### PilotNet( [ 4, 4] ), f = sum of squared lengths of final positions and velocities, 10 s sim time, start pos 0,300 vel 0,0
 
 ------------------------
