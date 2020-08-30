@@ -13,20 +13,20 @@ function compare_individuals(a, b)
 */
 function Population(pop_size, idv_factory)
 {
+	this.isFirstGeneration = true;
 	this.individuals = [];
 	for(let i = 0; i < pop_size; ++i) {
 		const idv = idv_factory();
 		idv.randomize();
-		idv.evaluate();
 		this.individuals.push(idv);
 	}
-	this.individuals.sort(compare_individuals);
 }
 
 Population.prototype.clearFitnesses = function()
 {
 	const half = Math.trunc(this.individuals.length / 2)
-	for(let i = half; i < this.individuals.length; ++i) {
+	let start = this.isFirstGeneration ? 0 : half;
+	for(let i = start; i < this.individuals.length; ++i) {
 		this.individuals[i].fitness = 0;
 	}
 }
@@ -34,7 +34,8 @@ Population.prototype.clearFitnesses = function()
 Population.prototype.evaluate = function()
 {
 	const half = Math.trunc(this.individuals.length / 2)
-	for(let i = half; i < this.individuals.length; ++i) {
+	let start = this.isFirstGeneration ? 0 : half;
+	for(let i = start; i < this.individuals.length; ++i) {
 		this.individuals[i].evaluate();
 	}
 }
@@ -56,6 +57,8 @@ Population.prototype.evolve = function(spread)
 		offspring.mutate(spread);
 		// parent.mutate(spread);
 	}
+
+	this.isFirstGeneration = false;
 
 	return best;
 }

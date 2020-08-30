@@ -60,7 +60,8 @@ read_parameters();
 // Evaluate nets for all of these start positions and velocities
 // (changes every generation but is the same for all individuals in a generation)
 let g_start_conditions = [];
-g_start_conditions.push( { pos: new Vec2(0, 300), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(100, -300), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(100, 100), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, 150), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
@@ -104,20 +105,18 @@ Individual.prototype.evaluate = function()
 	let fitness = 0;
 	const simulationSeconds = 10;
 
-	for(let i=0; i < g_start_conditions.length; ++i) {
-		// Set the start conditions
-		const start = g_start_conditions[i];
-		g_model.particle.reset( start.pos, start.vel );
+	// Set the start condition
+	const start = g_start_conditions[g_current_start_condition];
+	g_model.particle.reset( start.pos, start.vel );
 
-		for(let time = 0; time < simulationSeconds * 60; ++time) {
-			this.pilotNet.run( g_net_outputs, g_model );
-			const accel = g_net_outputs[0];
-			const rot = g_net_outputs[1];
-			g_model.run( accel, rot );
+	for(let time = 0; time < simulationSeconds * 60; ++time) {
+		this.pilotNet.run( g_net_outputs, g_model );
+		const accel = g_net_outputs[0];
+		const rot = g_net_outputs[1];
+		g_model.run( accel, rot );
 
-			const avl = Math.abs(g_model.particle.avl);
-			fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + avl*avl;
-		}
+		const avl = Math.abs(g_model.particle.avl);
+		fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + avl;
 	}
 
 	this.fitness += fitness;
