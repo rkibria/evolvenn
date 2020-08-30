@@ -77,18 +77,23 @@ const g_model = new WorldModel();
 
 function Individual()
 {
-	this.fitness = 0;
+	this.fitness = [0, -1];
 	this.pilotNet = makePilotNet();
 }
 
 Individual.prototype.compareIndividuals = function(a, b)
 {
-	return a.fitness - b.fitness;
+	return a.fitness[0] - b.fitness[0];
 }
 
 Individual.prototype.clearFitness = function()
 {
-	this.fitness = 0;
+	this.fitness[0] = 0;
+}
+
+Individual.prototype.fitnessToNumber = function()
+{
+	return this.fitness[0];
 }
 
 Individual.prototype.mutate = function(spread)
@@ -103,7 +108,7 @@ Individual.prototype.randomize = function()
 
 Individual.prototype.copy = function(other)
 {
-	this.fitness = other.fitness;
+	this.fitness[0] = other.fitness[0];
 	this.pilotNet.copy(other.pilotNet);
 }
 
@@ -141,7 +146,7 @@ Individual.prototype.evaluate = function()
 			// + (1.0 / (1 + dist)) * Math.abs(g_model.particle.dir.angle() + 0.5 * Math.PI);
 	}
 
-	this.fitness += fitness;
+	this.fitness[0] += fitness;
 }
 
 ///////////////////////////////////////////////////////////
@@ -165,7 +170,7 @@ function createStartConditions()
 // createStartConditions();
 
 function initBestSolution() {
-	return { fitness: -1, generation: 0, solution: makePilotNet() };
+	return { generation: 0, solution: new Individual() };
 }
 
 g_best_solution = initBestSolution();
@@ -202,16 +207,15 @@ window.onload = function()
 		if(g_current_start_condition == g_start_conditions.length - 1) {
 			generation += 1;
 
-			const fitness = g_population.evolve(spread);
-			g_fitnessgraph.push( fitness );
+			const currentBest = g_population.evolve(spread);
+			g_fitnessgraph.push( currentBest.fitnessToNumber() );
 
-			if(g_best_solution.fitness == -1 || fitness < g_best_solution.fitness) {
-				g_best_solution.fitness = fitness;
+			if(generation == 2 || g_best_solution.solution.compareIndividuals(currentBest, g_best_solution.solution) < 0) {
 				g_best_solution.generation = g_fitnessgraph.generation;
-				g_best_solution.solution.copy(g_population.individuals[0].pilotNet);
+				g_best_solution.solution.copy(currentBest);
 				document.getElementById("BEST_SOLUTION").innerHTML = "Best solution: fitness "
-					+ g_best_solution.fitness + " found at generation " + g_best_solution.generation;
-				document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.toText();
+					+ g_best_solution.solution.fitness.toString() + " found at generation " + g_best_solution.generation;
+				document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.pilotNet.toText();
 			}
 		}
 

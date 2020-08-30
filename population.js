@@ -41,7 +41,6 @@ Population.prototype.evaluate = function()
 Population.prototype.evolve = function(spread)
 {
 	this.individuals.sort(this.individuals[0].compareIndividuals);
-	const best = this.individuals[0].fitness;
 
 	const half = Math.trunc(this.individuals.length / 2)
 	for(let i = 0; i < half; ++i) {
@@ -50,10 +49,9 @@ Population.prototype.evolve = function(spread)
 
 		offspring.copy(parent);
 		offspring.mutate(spread);
-		// parent.mutate(spread);
 	}
 
 	this.isFirstGeneration = false;
 
-	return best;
+	return this.individuals[0];
 }
