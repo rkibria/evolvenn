@@ -126,5 +126,5 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 function makePilotNet()
 {
-	return new PilotNet( [ 7, 6, 5, 4 ] );
+	return new PilotNet( [ 7, 7 ] );
 }
