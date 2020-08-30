@@ -34,10 +34,10 @@ PilotNet.prototype.mutate = function(spread) {
 	this.nnet.mutate(spread);
 
 	const scaleFactor = 0.001;
-	this.rotScale += scaleFactor * (gaussianRand() - 0.5);
+	this.rotScale += scaleFactor * spread * (gaussianRand() - 0.5);
 	this.rotScale = Math.max(0.001, this.rotScale);
 
-	this.accelScale += scaleFactor * (gaussianRand() - 0.5);
+	this.accelScale += scaleFactor * spread * (gaussianRand() - 0.5);
 	this.accelScale = Math.max(0.001, this.accelScale);
 }
 
