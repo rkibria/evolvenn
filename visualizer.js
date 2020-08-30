@@ -105,8 +105,10 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 	const lineHeight = 14;
 	const prec = 2;
 	drawLabel(ctx, "pos: " + this.model.particle.pos.x.toFixed(prec) + "," + this.model.particle.pos.y.toFixed(prec),
-		leftEdge, lowerEdge - 2 * lineHeight, "left");
+		leftEdge, lowerEdge - 3 * lineHeight, "left");
 	drawLabel(ctx, "vel: " + this.model.particle.vel.x.toFixed(prec) + "," + this.model.particle.vel.y.toFixed(prec),
+		leftEdge, lowerEdge - 2 * lineHeight, "left");
+	drawLabel(ctx, "avl: " + this.model.particle.avl.toFixed(prec),
 		leftEdge, lowerEdge - 1 * lineHeight, "left");
 
 	// Particle

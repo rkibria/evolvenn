@@ -77,23 +77,34 @@ const g_model = new WorldModel();
 
 function Individual()
 {
-	this.fitness = [0, -1];
+	this.fitness = [0, 0];
 	this.pilotNet = makePilotNet();
 }
 
 Individual.prototype.compareIndividuals = function(a, b)
 {
-	return a.fitness[0] - b.fitness[0];
+	for(let i = 0; i < a.fitness.length; ++i) {
+		if(a.fitness[i] == b.fitness[i])
+			continue;
+		return a.fitness[i] - b.fitness[i];
+	}
+	return 0;
 }
 
 Individual.prototype.clearFitness = function()
 {
-	this.fitness[0] = 0;
+	for(let i = 0; i < this.fitness.length; ++i) {
+		this.fitness[i] = 0;
+	}
 }
 
 Individual.prototype.fitnessToNumber = function()
 {
-	return this.fitness[0];
+	let sum = 0;
+	for(let i = 0; i < this.fitness.length; ++i) {
+		sum += this.fitness[i];
+	}
+	return sum;
 }
 
 Individual.prototype.mutate = function(spread)
@@ -108,7 +119,10 @@ Individual.prototype.randomize = function()
 
 Individual.prototype.copy = function(other)
 {
-	this.fitness[0] = other.fitness[0];
+	for(let i = 0; i < this.fitness.length; ++i) {
+		this.fitness[i] = other.fitness[i];
+	}
+
 	this.pilotNet.copy(other.pilotNet);
 }
 
@@ -118,7 +132,7 @@ function square(x) {
 
 Individual.prototype.evaluate = function()
 {
-	let fitness = 0;
+	let fitness = [0, 0];
 	const simulationSeconds = 10;
 
 	// Set the start condition
@@ -131,22 +145,13 @@ Individual.prototype.evaluate = function()
 		const rot = g_net_outputs[1];
 		g_model.run( accel, rot );
 
-//		if(time >= (simulationSeconds - 1) * 60) {
-//			const avl = Math.abs(g_model.particle.avl);
-//			fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + (100 * avl);
-//		}
-
-		// Objective: Don't move, turn the rocket so it faces down
-		// fitness += g_model.particle.pos.length() + g_model.particle.vel.length() + Math.abs(g_model.particle.dir.angle() + 0.5 * Math.PI);
-
-		// End up facing down eventually
-		const dist = g_model.particle.pos.length();
-		fitness += dist + g_model.particle.vel.length()
-			+ Math.abs(g_model.particle.dir.angle() + 0.5 * Math.PI) * 100;
-			// + (1.0 / (1 + dist)) * Math.abs(g_model.particle.dir.angle() + 0.5 * Math.PI);
+		fitness[0] += g_model.particle.pos.length() + g_model.particle.vel.length();
+		fitness[1] += Math.abs(g_model.particle.avl) + accel + Math.abs(rot);
 	}
 
-	this.fitness[0] += fitness;
+	for(let i = 0; i < this.fitness.length; ++i) {
+		this.fitness[i] = fitness[i];
+	}
 }
 
 ///////////////////////////////////////////////////////////
@@ -213,8 +218,8 @@ window.onload = function()
 			if(generation == 2 || g_best_solution.solution.compareIndividuals(currentBest, g_best_solution.solution) < 0) {
 				g_best_solution.generation = g_fitnessgraph.generation;
 				g_best_solution.solution.copy(currentBest);
-				document.getElementById("BEST_SOLUTION").innerHTML = "Best solution: fitness "
-					+ g_best_solution.solution.fitness.toString() + " found at generation " + g_best_solution.generation;
+				document.getElementById("BEST_SOLUTION").innerHTML = "Best solution: fitness '"
+					+ g_best_solution.solution.fitness.toString() + "' found at generation " + g_best_solution.generation;
 				document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.pilotNet.toText();
 			}
 		}
