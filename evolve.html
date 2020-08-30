@@ -81,6 +81,16 @@ function Individual()
 	this.pilotNet = makePilotNet();
 }
 
+Individual.prototype.compareIndividuals = function(a, b)
+{
+	return a.fitness - b.fitness;
+}
+
+Individual.prototype.clearFitness = function()
+{
+	this.fitness = 0;
+}
+
 Individual.prototype.mutate = function(spread)
 {
 	this.pilotNet.mutate(spread);

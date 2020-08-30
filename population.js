@@ -3,11 +3,6 @@
 	Evolutionary algorithm
 */
 
-function compare_individuals(a, b)
-{
-	return a.fitness - b.fitness;
-}
-
 /*
 @param 
 */
@@ -27,7 +22,7 @@ Population.prototype.clearFitnesses = function()
 	const half = Math.trunc(this.individuals.length / 2)
 	let start = this.isFirstGeneration ? 0 : half;
 	for(let i = start; i < this.individuals.length; ++i) {
-		this.individuals[i].fitness = 0;
+		this.individuals[i].clearFitness();
 	}
 }
 
@@ -45,7 +40,7 @@ Population.prototype.evaluate = function()
 */
 Population.prototype.evolve = function(spread)
 {
-	this.individuals.sort(compare_individuals);
+	this.individuals.sort(this.individuals[0].compareIndividuals);
 	const best = this.individuals[0].fitness;
 
 	const half = Math.trunc(this.individuals.length / 2)
