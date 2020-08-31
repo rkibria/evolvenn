@@ -6,7 +6,7 @@
 @param innerLayers Array of neuron counts for each hidden layer (without the output layer)
 */
 function PilotNet( innerLayers ) {
-	const nInputs = 14;
+	const nInputs = 7;
 	const nOutputs = 3;
 
 	this.inputs = new Array( nInputs ).fill( 0 );
@@ -18,12 +18,12 @@ function PilotNet( innerLayers ) {
 	this.rotScale = 0.01;
 	this.accelScale = 0.01;
 
-	this.tMinus = {
-		pos: new Vec2(),
-		vel: new Vec2(),
-		dir: new Vec2(),
-		avl: 0
-	};
+	// this.tMinus = {
+		// pos: new Vec2(),
+		// vel: new Vec2(),
+		// dir: new Vec2(),
+		// avl: 0
+	// };
 }
 
 PilotNet.prototype.copy = function(other) {
@@ -86,16 +86,16 @@ PilotNet.prototype.run = function( outputs, model ) {
 	this.inputs[ 6 ] = model.particle.avl;
 
 	// T minus 1
-	this.inputs[ 7 ] = inputScale(this.tMinus.pos.x);
-	this.inputs[ 8 ] = inputScale(this.tMinus.pos.y);
+	// this.inputs[ 7 ] = inputScale(this.tMinus.pos.x);
+	// this.inputs[ 8 ] = inputScale(this.tMinus.pos.y);
 
-	this.inputs[ 9 ] = this.tMinus.vel.x;
-	this.inputs[ 10 ] = this.tMinus.vel.y;
+	// this.inputs[ 9 ] = this.tMinus.vel.x;
+	// this.inputs[ 10 ] = this.tMinus.vel.y;
 
-	this.inputs[ 11 ] = this.tMinus.dir.x;
-	this.inputs[ 12 ] = this.tMinus.dir.y;
+	// this.inputs[ 11 ] = this.tMinus.dir.x;
+	// this.inputs[ 12 ] = this.tMinus.dir.y;
 
-	this.inputs[ 13 ] = this.tMinus.avl;
+	// this.inputs[ 13 ] = this.tMinus.avl;
 
 
 	const nnOutputs = this.nnet.run( this.inputs );
@@ -143,13 +143,13 @@ PilotNet.prototype.run = function( outputs, model ) {
 	outputs[0] = accel;
 	outputs[1] = rot;
 
-	this.tMinus.pos.copy(model.particle.pos);
-	this.tMinus.vel.copy(model.particle.vel);
-	this.tMinus.dir.copy(model.particle.dir);
-	this.tMinus.avl = model.particle.avl;
+	// this.tMinus.pos.copy(model.particle.pos);
+	// this.tMinus.vel.copy(model.particle.vel);
+	// this.tMinus.dir.copy(model.particle.dir);
+	// this.tMinus.avl = model.particle.avl;
 }
 
 function makePilotNet()
 {
-	return new PilotNet( [ 14, 14 ] );
+	return new PilotNet( [ 7, 7 ] );
 }

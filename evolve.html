@@ -26,7 +26,7 @@
 <div id="PROGRESS_TEXT"></div><br>
 <button onclick="onRestartButton()">Restart</button>
 <br>
-Population size: <input type="number" id="ID_POP_SIZE" min="0" value="2000"><br>
+Population size: <input type="number" id="ID_POP_SIZE" min="0" value="100"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
 Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100"><br>
@@ -75,9 +75,14 @@ let g_current_start_condition = 0;
 const g_net_outputs = [0, 0];
 const g_model = new WorldModel();
 
+function makeFitness()
+{
+	return [0, 0, 0];
+}
+
 function Individual()
 {
-	this.fitness = [0, 0];
+	this.fitness = makeFitness();
 	this.pilotNet = makePilotNet();
 }
 
@@ -132,7 +137,7 @@ function square(x) {
 
 Individual.prototype.evaluate = function()
 {
-	let fitness = [0, 0];
+	let fitness = makeFitness();
 	const simulationSeconds = 10;
 
 	// Set the start condition
@@ -145,8 +150,16 @@ Individual.prototype.evaluate = function()
 		const rot = g_net_outputs[1];
 		g_model.run( accel, rot );
 
-		fitness[0] += g_model.particle.pos.length() + g_model.particle.vel.length();
-		// fitness[1] += Math.abs(g_model.particle.avl) + accel + Math.abs(rot);
+		const dist = g_model.particle.pos.length();
+		if(dist > 100) {
+			fitness[0] += Math.trunc(dist / 25);
+		}
+		/*else*/ {
+			// fitness[1] += Math.abs(g_model.particle.dir.angle() + 0.5 * Math.PI);
+			// fitness[1] += dist;
+			fitness[0] += 10 * Math.abs(g_model.particle.avl);
+			fitness[0] += g_model.particle.vel.length();
+		}
 	}
 
 	for(let i = 0; i < this.fitness.length; ++i) {
