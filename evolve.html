@@ -146,7 +146,7 @@ Individual.prototype.evaluate = function()
 		g_model.run( accel, rot );
 
 		fitness[0] += g_model.particle.pos.length() + g_model.particle.vel.length();
-		fitness[1] += Math.abs(g_model.particle.avl) + accel + Math.abs(rot);
+		// fitness[1] += Math.abs(g_model.particle.avl) + accel + Math.abs(rot);
 	}
 
 	for(let i = 0; i < this.fitness.length; ++i) {
