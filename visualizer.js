@@ -37,12 +37,12 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null) {
 	ctx.closePath();
 	ctx.stroke();
 
-	if( accel != null && !accel.isZero() ) {
+	if( accel != null && accel > 0 ) {
 		ctx.beginPath();
 		ctx.strokeStyle = "orange";
 		ctx.moveTo( 0, 20 );
 		ctx.lineTo( 3, 23 );
-		ctx.lineTo( 0, 30 + this._rocketFrame * 2 + Math.min( accel.length(), 5 ) * 15 );
+		ctx.lineTo( 0, 30 + this._rocketFrame * 2 + Math.min( accel, 5 ) * 15 );
 		ctx.lineTo( -3, 23 );
 		ctx.closePath();
 		ctx.stroke();
@@ -57,15 +57,15 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 	ctx.save();
 
 	// Acceleration indicator
-	if(accel != null && !accel.isZero()) {
+	if(accel != null && accel > 0) {
 		const minArrowLen = 20;
 		const maxArrowLen = this.s/2 * 0.95;
-		const accelLen = accel.length();
+		const accelLen = accel;
 		let arrowLen = accelLen * this.s/2;
 		arrowLen = Math.min(arrowLen, maxArrowLen);
 		arrowLen = Math.max(arrowLen, minArrowLen);
 
-		this._accelArrow.copy(accel)
+		this._accelArrow.copy(this.model.particle.dir)
 			.normalize()
 			.multiplyScalar(arrowLen)
 			.addComponents(this.center.x, -this.center.y);
