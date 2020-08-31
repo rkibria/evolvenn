@@ -18,15 +18,15 @@ function Visualizer(model, x, y, s) {
 	this._rocketFrame = 0;
 }
 
-Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null) {
+Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null, rot=null) {
 	ctx.save();
 	ctx.translate( x, y );
 
 	ctx.rotate( -(this.model.particle.dir.angle() - Math.PI / 2) );
 
 	ctx.beginPath();
-	ctx.lineWidth = "1";
-	ctx.strokeStyle = "grey";
+	ctx.lineWidth = "2";
+	ctx.fillStyle = "cadetblue";
 	ctx.moveTo( -10, 20 );
 	ctx.lineTo( -5, 15 );
 	ctx.lineTo( -5, -15 );
@@ -35,17 +35,41 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null) {
 	ctx.lineTo( 5, 15 );
 	ctx.lineTo( 10, 20 );
 	ctx.closePath();
-	ctx.stroke();
+	ctx.fill();
 
-	if( accel != null && accel > 0 ) {
-		ctx.beginPath();
-		ctx.strokeStyle = "orange";
-		ctx.moveTo( 0, 20 );
-		ctx.lineTo( 3, 23 );
-		ctx.lineTo( 0, 30 + this._rocketFrame * 2 + Math.min( accel, 5 ) * 15 );
-		ctx.lineTo( -3, 23 );
-		ctx.closePath();
-		ctx.stroke();
+	if( accel != null ) {
+		if(accel > 0) {
+			ctx.beginPath();
+			ctx.fillStyle = "orange";
+			ctx.moveTo( 0, 20 );
+			ctx.lineTo( 3, 23 );
+			ctx.lineTo( 0, 30 + this._rocketFrame * 2 + Math.min( accel, 5 ) * 15 );
+			ctx.lineTo( -3, 23 );
+			ctx.closePath();
+			ctx.fill();
+		}
+
+		const rotFlameSize = 2;
+		if(rot > 0) {
+			ctx.beginPath();
+			ctx.fillStyle = "orange";
+			ctx.moveTo( -10, 20 );
+			ctx.lineTo( -10 - rotFlameSize, 20 - rotFlameSize );
+			ctx.lineTo( -10 - 2 * rotFlameSize - this._rocketFrame * 2 + Math.min( rot, rotFlameSize ) * 3, 20 );
+			ctx.lineTo( -10 - rotFlameSize, 20 + rotFlameSize );
+			ctx.closePath();
+			ctx.fill();
+		}
+		else if(rot < 0){
+			ctx.beginPath();
+			ctx.fillStyle = "orange";
+			ctx.moveTo( 10, 20 );
+			ctx.lineTo( 10 + rotFlameSize, 20 - rotFlameSize );
+			ctx.lineTo( 10 + 2 * rotFlameSize + this._rocketFrame * 2 + Math.min( rot, rotFlameSize ) * 3, 20 );
+			ctx.lineTo( 10 + rotFlameSize, 20 + rotFlameSize );
+			ctx.closePath();
+			ctx.fill();
+		}
 
 		this._rocketFrame = ( this._rocketFrame + 1 ) % 5;
 	}
@@ -53,7 +77,7 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null) {
 	ctx.restore();
 }
 
-Visualizer.prototype.draw = function(ctx, accel=null) {
+Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 	ctx.save();
 
 	// Acceleration indicator
@@ -140,7 +164,7 @@ Visualizer.prototype.draw = function(ctx, accel=null) {
 	const y = this.center.y - dy;
 	const r = 2;
 
-	this.drawRocket( ctx, x, y, accel );
+	this.drawRocket( ctx, x, y, accel, rot );
 
 	ctx.fillStyle = "red";
 	ctx.beginPath();

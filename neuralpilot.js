@@ -24,6 +24,7 @@ NeuralPilot.prototype.run = function( ctx = null, doRunModel = true ) {
 
 	if( ctx != null ) {
 		const accel = this.outputs[0];
-		this.visualizer.draw( ctx, accel );
+		const rot = this.outputs[1];
+		this.visualizer.draw( ctx, accel, rot );
 	}
 };
