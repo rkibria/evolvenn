@@ -81,7 +81,7 @@ const g_model = new WorldModel();
 
 function makeFitness()
 {
-	return [0, 0, 0];
+	return [0, 0, 0, 0];
 }
 
 function Individual()
@@ -148,6 +148,9 @@ Individual.prototype.evaluate = function()
 	const start = g_start_conditions[g_current_start_condition];
 	g_model.particle.reset( start.pos, start.vel );
 
+	const dists = [];
+	const vels = [];
+	const avls = [];
 	for(let time = 0; time < simulationSeconds * 60; ++time) {
 		this.pilotNet.run( g_net_outputs, g_model );
 		const accel = g_net_outputs[0];
@@ -160,16 +163,21 @@ Individual.prototype.evaluate = function()
 		const vel = Math.sqrt(velSq);
 		const avl = Math.abs(g_model.particle.avl);
 
+		dists.push(dist);
+		vels.push(vel);
+		avls.push(avl);
+
 		fitness[0] *= 0.99;
-		fitness[1] *= 0.99;
-		fitness[2] *= 0.99;
+		// fitness[1] *= 0.99;
+		// fitness[2] *= 0.99;
 
 		// fitness[0] += distSq;
 		// fitness[1] += velSq;
 		// fitness[2] += avl;
 
 		const distRough = Math.trunc(dist / 25);
-		fitness[0] += square(distRough) + (10 * avl + vel);
+		fitness[0] += Math.trunc(square(distRough) + (10 * avl + vel));
+
 /*
 		if(dist > 100) {
 			fitness[0] += Math.trunc(dist / 25);d
@@ -181,6 +189,27 @@ Individual.prototype.evaluate = function()
 		}
 */
 	}
+
+	const threshold = 25;
+	let stayedUnder = 0;
+	let avlSum = 0;
+	let velSum = 0;
+	for(let i = 0; i < dists.length; ++i) {
+		const idx = dists.length - 1 - i;
+		if(dists[idx] <= threshold) {
+			stayedUnder += 1;
+			avlSum += avls[idx];
+			velSum += vels[idx];
+		}
+		else {
+			break;
+		}
+	}
+
+	fitness[0] = Math.trunc(fitness[0]);
+	fitness[1] = (simulationSeconds * 60 - stayedUnder) / 60;
+	fitness[2] = Math.trunc(avlSum);
+	fitness[3] = Math.trunc(velSum);
 
 	for(let i = 0; i < this.fitness.length; ++i) {
 		this.fitness[i] = fitness[i];
