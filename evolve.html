@@ -26,7 +26,7 @@
 <div id="PROGRESS_TEXT"></div><br>
 <button onclick="onRestartButton()">Restart</button>
 <br>
-Population size: <input type="number" id="ID_POP_SIZE" min="0" value="100"><br>
+Population size: <input type="number" id="ID_POP_SIZE" min="0" value="500"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
 Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100"><br>
@@ -57,17 +57,21 @@ read_parameters();
 // Evaluate nets for all of these start positions and velocities
 // (changes every generation but is the same for all individuals in a generation)
 let g_start_conditions = [];
+g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
+/*
 // g_start_conditions.push( { pos: new Vec2(0, 0), vel: new Vec2(0, 0) } );
 g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(-300, 0), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(300, 300), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(-300, -300), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(100, 100), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, 150), vel: new Vec2(0, 0) } );
-// g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(0, -150), vel: new Vec2(0, 0) } );
-// g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(150, 0), vel: new Vec2(0, 0) } );
-// g_start_conditions.push( { pos: new Vec2(-300, 0), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(-150, 0), vel: new Vec2(0, 0) } );
 // g_start_conditions.push( { pos: new Vec2(-150, -150), vel: new Vec2(0, 0) } );
+*/
 
 let g_current_start_condition = 0;
 
@@ -150,15 +154,26 @@ Individual.prototype.evaluate = function()
 		const rot = g_net_outputs[1];
 		g_model.run( accel, rot );
 
-		const dist = g_model.particle.pos.length();
+		const distSq = g_model.particle.pos.lengthSq();
+		const dist = Math.sqrt(distSq);
+		const velSq = g_model.particle.vel.lengthSq();
+		const vel = Math.sqrt(velSq);
+		const avl = Math.abs(g_model.particle.avl);
+
+		fitness[0] *= 0.99;
+		fitness[1] *= 0.99;
+		fitness[2] *= 0.99;
+
+		// fitness[0] += distSq;
+		// fitness[1] += velSq;
+		// fitness[2] += avl;
+
 		if(dist > 100) {
 			fitness[0] += Math.trunc(dist / 25);
 		}
-		/*else*/ {
-			// fitness[1] += Math.abs(g_model.particle.dir.angle() + 0.5 * Math.PI);
-			// fitness[1] += dist;
-			fitness[0] += 10 * Math.abs(g_model.particle.avl);
-			fitness[0] += g_model.particle.vel.length();
+		else {
+			fitness[0] += 10 * avl;
+			fitness[0] += vel;
 		}
 	}
 
