@@ -168,13 +168,18 @@ Individual.prototype.evaluate = function()
 		// fitness[1] += velSq;
 		// fitness[2] += avl;
 
+		const distRough = Math.trunc(dist / 25);
+		fitness[0] += square(distRough) + (10 * avl + vel);
+/*
 		if(dist > 100) {
-			fitness[0] += Math.trunc(dist / 25);
+			fitness[0] += Math.trunc(dist / 25);d
 		}
 		else {
+			fitness[0] += dist;
 			fitness[0] += 10 * avl;
 			fitness[0] += vel;
 		}
+*/
 	}
 
 	for(let i = 0; i < this.fitness.length; ++i) {
