@@ -139,6 +139,10 @@ function square(x) {
 	return x * x;
 }
 
+function safeInvert(x) {
+	return 1 / (1 + x);
+}
+
 Individual.prototype.evaluate = function()
 {
 	let fitness = makeFitness();
