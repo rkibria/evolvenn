@@ -68,6 +68,7 @@ body {
 		<div class='parent'>
 			<div class='child float-left-child'>
 				<button class="button button1" onclick="onPauseButton()">Toggle pause</button><br>
+				<p id="PAUSE_STATUS">Pause OFF</p>
 				<hr>
 				<button class="button button1" onclick="onRandomizePosButton()">Randomize pos.</button><br>
 				<button class="button button1" onclick="onSetPosButton()">Set pos.</button><br>
@@ -96,6 +97,7 @@ document.getElementById("ID_NET_SETUP").value = pilotNet.toText();
 const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), 10, 10, 780 ), pilotNet );
 
 let g_paused = false;
+setPause(g_paused);
 
 window.onload = function() {
 	const ctx = canvas.getContext('2d');
@@ -108,6 +110,11 @@ window.onload = function() {
 		// const t0 = performance.now();
 
 		g_pilot.run(ctx, !g_paused);
+
+		const dist = g_pilot.visualizer.model.particle.pos.length();
+		if(dist <= 10) {
+			setPause(true);
+		}
 
 		// const t1 = performance.now();
 		// console.log((t1 - t0) + " ms");
@@ -132,7 +139,12 @@ function onLoadNetworkButton() {
 }
 
 function onPauseButton() {
-	g_paused = !g_paused;
+	setPause(!g_paused);
+}
+
+function setPause(doPause) {
+	g_paused = doPause;
+	document.getElementById("PAUSE_STATUS").innerHTML = "Pause " + (g_paused ? "ON" : "OFF");
 }
 
 </script>

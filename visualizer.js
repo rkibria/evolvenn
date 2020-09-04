@@ -109,6 +109,14 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 		drawLabel( ctx, accelLen.toFixed(3), this.center.x, this.center.y );
 	}
 
+	// Distance marker
+	ctx.save()
+	ctx.strokeStyle = "darkred";
+	ctx.beginPath();
+	ctx.arc(this.center.x, this.center.y, 10, 0, 2 * Math.PI);
+	ctx.stroke();
+	ctx.restore();
+
 	// Center cross
 	ctx.strokeStyle = "darkgrey";
 	ctx.beginPath();
@@ -118,7 +126,7 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 	ctx.stroke(); 
 	ctx.moveTo(this.center.x, this.center.y - crossSize);
 	ctx.lineTo(this.center.x, this.center.y + crossSize);
-	ctx.stroke(); 
+	ctx.stroke();
 
 	// Frame
 	ctx.strokeRect(this.x, this.y, this.s, this.s);
