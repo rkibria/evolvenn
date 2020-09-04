@@ -57,21 +57,14 @@ read_parameters();
 // Evaluate nets for all of these start positions and velocities
 // (changes every generation but is the same for all individuals in a generation)
 let g_start_conditions = [];
-g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
-/*
-// g_start_conditions.push( { pos: new Vec2(0, 0), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(0, 300), vel: new Vec2(0, 0) } );
 g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
 g_start_conditions.push( { pos: new Vec2(-300, 0), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(300, 300), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
 g_start_conditions.push( { pos: new Vec2(-300, -300), vel: new Vec2(0, 0) } );
-// g_start_conditions.push( { pos: new Vec2(100, 100), vel: new Vec2(0, 0) } );
-// g_start_conditions.push( { pos: new Vec2(0, 150), vel: new Vec2(0, 0) } );
-// g_start_conditions.push( { pos: new Vec2(0, -150), vel: new Vec2(0, 0) } );
-// g_start_conditions.push( { pos: new Vec2(150, 0), vel: new Vec2(0, 0) } );
-// g_start_conditions.push( { pos: new Vec2(-150, 0), vel: new Vec2(0, 0) } );
-// g_start_conditions.push( { pos: new Vec2(-150, -150), vel: new Vec2(0, 0) } );
-*/
+g_start_conditions.push( { pos: new Vec2(300, 300), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(-300, 300), vel: new Vec2(0, 0) } );
+g_start_conditions.push( { pos: new Vec2(300, -300), vel: new Vec2(0, 0) } );
 
 let g_current_start_condition = 0;
 
@@ -172,13 +165,13 @@ Individual.prototype.evaluate = function()
 				break;
 			}
 			else {
-				fitness[0] += distSq;
+				fitness[0] += dist;
 			}
 		}
 	}
 
 	for(let i = 0; i < this.fitness.length; ++i) {
-		this.fitness[i] = fitness[i];
+		this.fitness[i] += fitness[i];
 	}
 }
 
