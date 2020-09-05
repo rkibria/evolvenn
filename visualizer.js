@@ -200,7 +200,7 @@ Visualizer.prototype.drawPath = function(ctx, positions, color="white") {
 		const x = positions[i][0];
 		const y = positions[i][1];
 		const ex = this.center.x + x;
-		const ey = this.center.y + y;
+		const ey = this.center.y - y;
 		if(i == 0) {
 			ctx.moveTo( ex, ey );
 
