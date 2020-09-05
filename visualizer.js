@@ -89,10 +89,12 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 		arrowLen = Math.min(arrowLen, maxArrowLen);
 		arrowLen = Math.max(arrowLen, minArrowLen);
 
-		this._accelArrow.copy(this.model.particle.dir)
-			.normalize()
-			.multiplyScalar(arrowLen)
-			.addComponents(this.center.x, -this.center.y);
+		if(this.model != null) {
+			this._accelArrow.copy(this.model.particle.dir)
+				.normalize()
+				.multiplyScalar(arrowLen)
+				.addComponents(this.center.x, -this.center.y);
+		}
 		this._accelArrow.y *= -1;
 
 		ctx.save();
@@ -131,54 +133,89 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 	// Frame
 	ctx.strokeRect(this.x, this.y, this.s, this.s);
 
-	// Position and speed
-	const lowerEdge = this.y + this.s;
-	const leftEdge = this.x + 5;
-	const lineHeight = 14;
-	const prec = 2;
-	drawLabel(ctx, "pos: " + this.model.particle.pos.x.toFixed(prec) + "," + this.model.particle.pos.y.toFixed(prec),
-		leftEdge, lowerEdge - 3 * lineHeight, "left");
-	drawLabel(ctx, "vel: " + this.model.particle.vel.x.toFixed(prec) + "," + this.model.particle.vel.y.toFixed(prec),
-		leftEdge, lowerEdge - 2 * lineHeight, "left");
-	drawLabel(ctx, "avl: " + this.model.particle.avl.toFixed(prec),
-		leftEdge, lowerEdge - 1 * lineHeight, "left");
+	if(this.model != null) {
+		// Position and speed
+		const lowerEdge = this.y + this.s;
+		const leftEdge = this.x + 5;
+		const lineHeight = 14;
+		const prec = 2;
 
-	// Particle
-	let scale = 1;
-	let dx = this.model.particle.pos.x;
-	let dy = this.model.particle.pos.y;
-	const edge = this.s / 2;
-	while(Math.abs(dx) > edge || Math.abs(dy) > edge) {
-		scale *= 2;
-		dx /= 2;
-		dy /= 2;
-	}
-	dx = Math.trunc(dx);
-	dy = Math.trunc(dy);
+		drawLabel(ctx, "pos: " + this.model.particle.pos.x.toFixed(prec) + "," + this.model.particle.pos.y.toFixed(prec),
+			leftEdge, lowerEdge - 3 * lineHeight, "left");
+		drawLabel(ctx, "vel: " + this.model.particle.vel.x.toFixed(prec) + "," + this.model.particle.vel.y.toFixed(prec),
+			leftEdge, lowerEdge - 2 * lineHeight, "left");
+		drawLabel(ctx, "avl: " + this.model.particle.avl.toFixed(prec),
+			leftEdge, lowerEdge - 1 * lineHeight, "left");
 
-	drawLabel(ctx, "scale 1:" + scale.toString(),
-		this.center.x, lowerEdge - 1 * lineHeight, "center");
-	if(scale > 1) {
+		// Particle
+		let scale = 1;
+		let dx = this.model.particle.pos.x;
+		let dy = this.model.particle.pos.y;
+		const edge = this.s / 2;
+		while(Math.abs(dx) > edge || Math.abs(dy) > edge) {
+			scale *= 2;
+			dx /= 2;
+			dy /= 2;
+		}
+		dx = Math.trunc(dx);
+		dy = Math.trunc(dy);
+
+		drawLabel(ctx, "scale 1:" + scale.toString(),
+			this.center.x, lowerEdge - 1 * lineHeight, "center");
+		if(scale > 1) {
+			ctx.save();
+			ctx.strokeStyle = "darkgrey";
+			ctx.setLineDash([1, 1]);
+			const scaleBoxSize = this.s / scale;
+			ctx.strokeRect(this.center.x - scaleBoxSize/2, this.center.y - scaleBoxSize/2,
+				scaleBoxSize, scaleBoxSize);
+			ctx.restore();
+		}
+
+		const x = this.center.x + dx;
+		const y = this.center.y - dy;
+		const r = 2;
+
+		this.drawRocket( ctx, x, y, accel, rot );
+
+		// Rocket center mass
 		ctx.save();
-		ctx.strokeStyle = "darkgrey";
-		ctx.setLineDash([1, 1]);
-		const scaleBoxSize = this.s / scale;
-		ctx.strokeRect(this.center.x - scaleBoxSize/2, this.center.y - scaleBoxSize/2,
-			scaleBoxSize, scaleBoxSize);
+		ctx.fillStyle = "red";
+		ctx.beginPath();
+		ctx.arc(x, y, r, 0, (Math.PI * 2), true);
+		ctx.closePath();
+		ctx.fill();
 		ctx.restore();
 	}
 
-	const x = this.center.x + dx;
-	const y = this.center.y - dy;
-	const r = 2;
+}
 
-	this.drawRocket( ctx, x, y, accel, rot );
-
-	ctx.fillStyle = "red";
+// positions is an array of [x,y] arrays
+// always draws at scale 1
+Visualizer.prototype.drawPath = function(ctx, positions, color="white") {
+	ctx.save();
+	ctx.strokeStyle = color;
 	ctx.beginPath();
-	ctx.arc(x, y, r, 0, (Math.PI * 2), true);
-	ctx.closePath();
-	ctx.fill();
+	for(let i = 0; i < positions.length; ++i) {
+		const x = positions[i][0];
+		const y = positions[i][1];
+		const ex = this.center.x + x;
+		const ey = this.center.y + y;
+		if(i == 0) {
+			ctx.moveTo( ex, ey );
 
+			ctx.save();
+			ctx.fillStyle = "red";
+			ctx.beginPath();
+			ctx.arc(ex, ey, 5, 0, (Math.PI * 2), true);
+			ctx.closePath();
+			ctx.fill();
+			ctx.restore();
+		}
+		else {
+			ctx.lineTo( ex, ey );
+		}
+	}
+	ctx.stroke();
 	ctx.restore();
-};
+}

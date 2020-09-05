@@ -3,6 +3,47 @@
 <head>
 <meta charset="utf-8">
 <title>Pilot network evolution</title>
+<style>
+body {background-color: black;}
+
+html *
+{
+	font-size: 1em;
+	color: lightgray;
+	font-family: Arial;
+}
+
+.float-left-child {
+	float: left;
+}
+
+/* base css */
+body {
+	padding: 0px;
+}
+.parent {
+	padding: 0px
+}
+.child {
+	padding: 5px
+}
+
+.button {
+	background-color: #303030;
+	width: 150px;
+	border: solid 2px lightgray;
+	color: lightgray;
+	padding: 5px 3px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	margin: 4px 2px;
+	cursor: pointer;
+}
+
+.button1 {font-size: 16px;}
+
+</style>
 </head>
 <body>
 
@@ -24,20 +65,23 @@
 <br>
 <div id="RUNING_TIME_TEXT"></div><br>
 <div id="PROGRESS_TEXT"></div><br>
-<button onclick="onRestartButton()">Restart</button>
+<button class="button button1" onclick="onRestartButton()">Restart</button>
 <br>
 Population size: <input type="number" id="ID_POP_SIZE" min="0" value="500"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
 Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100"><br>
 <p id="BEST_SOLUTION">Best solution:</p>
-<textarea id="BEST_SOLUTION_OUT" rows="20" cols="120">
+<textarea id="BEST_SOLUTION_OUT" rows="5" cols="120">
 NN definition
 </textarea>
 <br>
+<canvas id="canvas2" width="800" height="800" style="border:0px;">Your browser does not support the HTML5 canvas tag.</canvas>
 <br>
 
 <script>
+
+var CSS_COLOR_NAMES = ["White", "Red", "Green", "Blue", "Violet", "Yellow", "Pink", "Orange"];
 
 const g_start_time = new Date();
 
@@ -65,6 +109,8 @@ g_start_conditions.push( { pos: new Vec2(-300, -300), vel: new Vec2(0, 0) } );
 g_start_conditions.push( { pos: new Vec2(300, 300), vel: new Vec2(0, 0) } );
 g_start_conditions.push( { pos: new Vec2(-300, 300), vel: new Vec2(0, 0) } );
 g_start_conditions.push( { pos: new Vec2(300, -300), vel: new Vec2(0, 0) } );
+/*
+*/
 
 let g_current_start_condition = 0;
 
@@ -81,6 +127,7 @@ function Individual()
 {
 	this.fitness = makeFitness();
 	this.pilotNet = makePilotNet();
+	this.positions = [];
 }
 
 Individual.prototype.compareIndividuals = function(a, b)
@@ -141,11 +188,15 @@ Individual.prototype.evaluate = function()
 	let fitness = makeFitness();
 	const simulationSeconds = 10;
 
+	if(g_current_start_condition == 0) {
+		this.positions = [];
+	}
+
 	// Set the start condition
 	const start = g_start_conditions[g_current_start_condition];
 	g_model.particle.reset( start.pos, start.vel );
 
-	let hasHit = false;
+	const positions = [];
 	for(let time = 0; time < simulationSeconds * 60; ++time) {
 		this.pilotNet.run( g_net_outputs, g_model );
 		const accel = g_net_outputs[0];
@@ -154,21 +205,17 @@ Individual.prototype.evaluate = function()
 
 		const distSq = g_model.particle.pos.lengthSq();
 		const dist = Math.sqrt(distSq);
-		// const velSq = g_model.particle.vel.lengthSq();
-		// const vel = Math.sqrt(velSq);
 
-		// fitness[0] *= 0.99;
+		positions.push([g_model.particle.pos.x, g_model.particle.pos.y]);
 
-		if(!hasHit) {
-			if(dist < 10) {
-				hasHit = true;
-				break;
-			}
-			else {
-				fitness[0] += dist;
-			}
+		if(dist < 10) {
+			break;
+		}
+		else {
+			fitness[0] += dist;
 		}
 	}
+	this.positions.push(positions);
 
 	for(let i = 0; i < this.fitness.length; ++i) {
 		this.fitness[i] += fitness[i];
@@ -177,6 +224,8 @@ Individual.prototype.evaluate = function()
 
 ///////////////////////////////////////////////////////////
 const g_fitnessgraph = new FitnessGraph( 0, 0, canvas.width, 100 );
+
+g_visualizer = new Visualizer( null, 10, 10, 780 );
 
 function makePopulation() {
 	return new Population(g_pop_size, function() {return new Individual()});
@@ -205,11 +254,13 @@ let generation = 1;
 window.onload = function()
 {
 	const canvas = document.getElementById('canvas');
-	const context = canvas.getContext('2d');
+	const ctx = canvas.getContext('2d');
+	const canvas2 = document.getElementById('canvas2');
+	const ctx2 = canvas2.getContext('2d');
 
 	(function drawFrame () {
 		window.requestAnimationFrame( drawFrame, canvas );
-		context.clearRect( 0, 0, canvas.width, canvas.height );
+		ctx.clearRect( 0, 0, canvas.width, canvas.height );
 
 		const endTime = new Date();
 		const secondsElapsed = Math.trunc((endTime - g_start_time) / 1000);
@@ -243,9 +294,15 @@ window.onload = function()
 					+ g_best_solution.solution.fitness.toString() + "' found at generation " + g_best_solution.generation;
 				document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.pilotNet.toText();
 			}
+
+			ctx2.clearRect( 0, 0, canvas2.width, canvas2.height );
+			g_visualizer.draw( ctx2 );
+			for(let i = 0; i < currentBest.positions.length; ++i) {
+				g_visualizer.drawPath( ctx2, currentBest.positions[i], CSS_COLOR_NAMES[i % CSS_COLOR_NAMES.length] );
+			}
 		}
 
-		g_fitnessgraph.draw( context );
+		g_fitnessgraph.draw( ctx );
 
 		g_current_start_condition = ((g_current_start_condition + 1) % g_start_conditions.length);
 
