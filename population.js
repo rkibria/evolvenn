@@ -8,6 +8,7 @@
 */
 function Population(pop_size, idv_factory)
 {
+	this.keepBest = true;
 	this.elitism = false;
 	this.isFirstGeneration = true;
 	this.individuals = [];
@@ -51,7 +52,9 @@ Population.prototype.evolve = function(spread)
 		offspring.copy(parent);
 		offspring.mutate(spread);
 		if(!this.elitism) {
-			parent.mutate(spread);
+			if(!this.keepBest || i != 0) {
+				parent.mutate(spread);
+			}
 		}
 	}
 

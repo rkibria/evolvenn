@@ -67,7 +67,7 @@ body {
 <div id="PROGRESS_TEXT"></div><br>
 <button class="button button1" onclick="onRestartButton()">Restart</button>
 <br>
-Population size: <input type="number" id="ID_POP_SIZE" min="0" value="500"><br>
+Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
 Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100"><br>
@@ -101,7 +101,7 @@ read_parameters();
 // Evaluate nets for all of these start positions and velocities
 // (changes every generation but is the same for all individuals in a generation)
 let g_start_conditions = [];
-g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
+// g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
 
 let g_current_start_condition = 0;
 
@@ -119,6 +119,7 @@ function Individual()
 	this.fitness = makeFitness();
 	this.pilotNet = makePilotNet();
 	this.positions = [];
+	this.solves = 0;
 }
 
 Individual.prototype.compareIndividuals = function(a, b)
@@ -136,6 +137,7 @@ Individual.prototype.clearFitness = function()
 	for(let i = 0; i < this.fitness.length; ++i) {
 		this.fitness[i] = 0;
 	}
+	this.solves = 0;
 }
 
 Individual.prototype.fitnessToNumber = function()
@@ -204,6 +206,7 @@ Individual.prototype.evaluate = function()
 		positions.push([g_model.particle.pos.x, g_model.particle.pos.y]);
 
 		if(dist < 10) {
+			this.solves += 1;
 			break;
 		}
 		else {
@@ -228,16 +231,14 @@ function makePopulation() {
 
 let g_population = makePopulation();
 
-function createStartConditions()
+function createStartConditions(count, distance)
 {
-	for(let i=0; i < g_start_conditions.length; ++i) {
-		const start = g_start_conditions[i];
-		start.pos.randomInUnitDisk().multiplyScalar( 300 );
-		start.vel.randomInUnitDisk().multiplyScalar( 10 );
-	}
+	const startPos = new Vec2();
+	startPos.setLengthAngle(distance, count * (2 * Math.PI / 30));
+	g_start_conditions.push( { pos: startPos, vel: new Vec2(0, 0) } );
 }
 
-// createStartConditions();
+createStartConditions(0, 100);
 
 function initBestSolution() {
 	return { generation: 0, solution: new Individual() };
@@ -271,12 +272,6 @@ window.onload = function()
 
 		if(g_current_start_condition == 0) {
 			g_population.clearFitnesses();
-
-			if(generation % 10 == 0 && g_start_conditions.length < 30) {
-				const startPos = new Vec2();
-				startPos.setLengthAngle(300, generation / 10 * (2 * Math.PI / 30));
-				g_start_conditions.push( { pos: startPos, vel: new Vec2(0, 0) } );
-			}
 		}
 
 		g_population.evaluate();
@@ -293,6 +288,11 @@ window.onload = function()
 				document.getElementById("BEST_SOLUTION").innerHTML = "Best solution: fitness '"
 					+ g_best_solution.solution.fitness.toString() + "' found at generation " + g_best_solution.generation;
 				document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.pilotNet.toText();
+			}
+
+			if(currentBest.solves == g_start_conditions.length && g_start_conditions.length < 30) {
+				const count = g_start_conditions.length;
+				createStartConditions(count, 100);
 			}
 
 			ctx2.clearRect( 0, 0, canvas2.width, canvas2.height );
