@@ -8,7 +8,7 @@
 */
 function Population(pop_size, idv_factory)
 {
-	this.elitism = true;
+	this.elitism = false;
 	this.isFirstGeneration = true;
 	this.individuals = [];
 	for(let i = 0; i < pop_size; ++i) {
@@ -21,7 +21,7 @@ function Population(pop_size, idv_factory)
 Population.prototype.clearFitnesses = function()
 {
 	const half = Math.trunc(this.individuals.length / 2)
-	let start = this.elitism ? 0 : (this.isFirstGeneration ? 0 : half);
+	let start = !this.elitism ? 0 : (this.isFirstGeneration ? 0 : half);
 	for(let i = start; i < this.individuals.length; ++i) {
 		this.individuals[i].clearFitness();
 	}
@@ -30,7 +30,7 @@ Population.prototype.clearFitnesses = function()
 Population.prototype.evaluate = function()
 {
 	const half = Math.trunc(this.individuals.length / 2)
-	let start = this.elitism ? 0 : (this.isFirstGeneration ? 0 : half);
+	let start = !this.elitism ? 0 : (this.isFirstGeneration ? 0 : half);
 	for(let i = start; i < this.individuals.length; ++i) {
 		this.individuals[i].evaluate();
 	}
@@ -50,6 +50,9 @@ Population.prototype.evolve = function(spread)
 
 		offspring.copy(parent);
 		offspring.mutate(spread);
+		if(!this.elitism) {
+			parent.mutate(spread);
+		}
 	}
 
 	this.isFirstGeneration = false;

@@ -101,16 +101,7 @@ read_parameters();
 // Evaluate nets for all of these start positions and velocities
 // (changes every generation but is the same for all individuals in a generation)
 let g_start_conditions = [];
-g_start_conditions.push( { pos: new Vec2(0, 300), vel: new Vec2(0, 0) } );
 g_start_conditions.push( { pos: new Vec2(300, 0), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(-300, 0), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(0, -300), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(-300, -300), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(300, 300), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(-300, 300), vel: new Vec2(0, 0) } );
-g_start_conditions.push( { pos: new Vec2(300, -300), vel: new Vec2(0, 0) } );
-/*
-*/
 
 let g_current_start_condition = 0;
 
@@ -195,6 +186,7 @@ Individual.prototype.evaluate = function()
 	// Set the start condition
 	const start = g_start_conditions[g_current_start_condition];
 	g_model.particle.reset( start.pos, start.vel );
+	g_model.particle.pos.addComponents(getRandomInt(-10, 10), getRandomInt(-10, 10));
 
 	const positions = [];
 	for(let time = 0; time < simulationSeconds * 60; ++time) {
@@ -205,6 +197,9 @@ Individual.prototype.evaluate = function()
 
 		const distSq = g_model.particle.pos.lengthSq();
 		const dist = Math.sqrt(distSq);
+		// const velSq = g_model.particle.vel.lengthSq();
+		// const vel = Math.sqrt(velSq);
+		// const avl = Math.abs(g_model.particle.avl);
 
 		positions.push([g_model.particle.pos.x, g_model.particle.pos.y]);
 
@@ -212,7 +207,7 @@ Individual.prototype.evaluate = function()
 			break;
 		}
 		else {
-			fitness[0] += dist;
+			fitness[0] += distSq;
 		}
 	}
 	this.positions.push(positions);
@@ -272,11 +267,16 @@ window.onload = function()
 
 		const halflife_factor = (g_mutation_halflife > 0)
 			? Math.pow(2, -generation / g_mutation_halflife) : 1;
-		const spread = g_mutation_spread * halflife_factor;
-		// createStartConditions();
+		const spread = Math.max(g_mutation_spread * halflife_factor, g_mutation_spread * 0.01);
 
 		if(g_current_start_condition == 0) {
 			g_population.clearFitnesses();
+
+			if(generation % 10 == 0 && g_start_conditions.length < 30) {
+				const startPos = new Vec2();
+				startPos.setLengthAngle(300, generation / 10 * (2 * Math.PI / 30));
+				g_start_conditions.push( { pos: startPos, vel: new Vec2(0, 0) } );
+			}
 		}
 
 		g_population.evaluate();
@@ -287,7 +287,7 @@ window.onload = function()
 			const currentBest = g_population.evolve(spread);
 			g_fitnessgraph.push( currentBest.fitnessToNumber() );
 
-			if(generation == 2 || g_best_solution.solution.compareIndividuals(currentBest, g_best_solution.solution) < 0) {
+			if(true || generation == 2 || g_best_solution.solution.compareIndividuals(currentBest, g_best_solution.solution) < 0) {
 				g_best_solution.generation = g_fitnessgraph.generation;
 				g_best_solution.solution.copy(currentBest);
 				document.getElementById("BEST_SOLUTION").innerHTML = "Best solution: fitness '"
