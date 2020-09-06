@@ -13,6 +13,7 @@ function Visualizer(model, x, y, s) {
 	this.s = s;
 
 	this.center = new Vec2(this.x + this.s/2, this.y + this.s/2);
+	this.distanceMarker = 20;
 
 	this._accelArrow = new Vec2();
 	this._rocketFrame = 0;
@@ -114,8 +115,9 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 	// Distance marker
 	ctx.save()
 	ctx.strokeStyle = "darkred";
+	ctx.setLineDash([5, 5]);
 	ctx.beginPath();
-	ctx.arc(this.center.x, this.center.y, 10, 0, 2 * Math.PI);
+	ctx.arc(this.center.x, this.center.y, this.distanceMarker, 0, 2 * Math.PI);
 	ctx.stroke();
 	ctx.restore();
 

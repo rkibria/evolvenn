@@ -34,10 +34,15 @@ Particle.prototype.run = function(accel, rot) {
 	this.pos.add(this.vel);
 };
 
-Particle.prototype.reset = function(pos, vel) {
+Particle.prototype.reset = function(pos, vel, dir=null) {
 	this.pos.copy( pos );
 	this.vel.copy( vel );
-	this.dir.set(0, 1);
+	if(dir == null) {
+		this.dir.set(0, 1);
+	}
+	else {
+		this.dir.copy( dir );
+	}
 	this.avl = 0;
 }
 
