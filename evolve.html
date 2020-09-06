@@ -98,6 +98,8 @@ read_parameters();
 
 ///////////////////////////////////////////////////////////
 
+const BASE_DIST_INC = 100;
+
 // Evaluate nets for all of these start positions and velocities
 // (changes every generation but is the same for all individuals in a generation)
 let g_start_conditions = [];
@@ -188,7 +190,6 @@ Individual.prototype.evaluate = function()
 	// Set the start condition
 	const start = g_start_conditions[g_current_start_condition];
 	g_model.particle.reset( start.pos, start.vel, start.dir );
-	// g_model.particle.pos.addComponents(getRandomInt(-10, 10), getRandomInt(-10, 10));
 
 	const positions = [];
 	for(let time = 0; time < simulationSeconds * 60; ++time) {
@@ -231,22 +232,27 @@ function makePopulation() {
 
 let g_population = makePopulation();
 
-function createStartConditions(count, distance)
+function createStartConditions(count, baseDistance)
 {
 	const startPos = new Vec2();
 	const startDir = new Vec2();
 
 	const dirsPerPoint = 360 / 45;
 	const pointsPerCircle = 30;
+	const variationsPerCircle = dirsPerPoint * pointsPerCircle;
 
+	const distance = baseDistance * (1 + Math.trunc(count / variationsPerCircle));
 	startPos.setLengthAngle(distance, Math.trunc(count / dirsPerPoint) * (2 * Math.PI / pointsPerCircle) - Math.PI/2);
+
+	// const variation = Math.sqrt(baseDistance);
+	// startPos.addComponents(getRandomInt(-variation, variation), getRandomInt(-variation, variation));
 
 	startDir.setLengthAngle(1, count * (2 * Math.PI / dirsPerPoint) + Math.PI/2);
 
 	g_start_conditions.push( { pos: startPos, vel: new Vec2(0, 0), dir: startDir } );
 }
 
-createStartConditions(0, 200);
+createStartConditions(0, BASE_DIST_INC);
 
 function initBestSolution() {
 	return { generation: 0, solution: new Individual() };
@@ -284,6 +290,7 @@ window.onload = function()
 
 		g_population.evaluate();
 
+		let goToNextCondition = true;
 		if(g_current_start_condition == g_start_conditions.length - 1) {
 			generation += 1;
 
@@ -300,7 +307,9 @@ window.onload = function()
 
 			if(currentBest.solves == g_start_conditions.length) {
 				const count = g_start_conditions.length;
-				createStartConditions(count, 200);
+				createStartConditions(count, BASE_DIST_INC);
+				goToNextCondition = false;
+				g_current_start_condition = 0;
 			}
 
 			ctx2.clearRect( 0, 0, canvas2.width, canvas2.height );
@@ -312,7 +321,9 @@ window.onload = function()
 
 		g_fitnessgraph.draw( ctx );
 
-		g_current_start_condition = ((g_current_start_condition + 1) % g_start_conditions.length);
+		if(goToNextCondition) {
+			g_current_start_condition = ((g_current_start_condition + 1) % g_start_conditions.length);
+		}
 
 	}());
 }
