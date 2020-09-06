@@ -80,6 +80,7 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null, rot=null) {
 
 Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 	ctx.save();
+	const lineHeight = 14;
 
 	// Acceleration indicator
 	if(accel != null && accel > 0) {
@@ -112,6 +113,11 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 		drawLabel( ctx, accelLen.toFixed(3), this.center.x, this.center.y );
 	}
 
+	// Rotation label
+	if(rot != null && rot != 0) {
+		drawLabel( ctx, "rot: " + rot.toFixed(3), this.center.x, this.center.y + lineHeight );
+	}
+
 	// Distance marker
 	ctx.save()
 	ctx.strokeStyle = "darkred";
@@ -139,7 +145,6 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 		// Position and speed
 		const lowerEdge = this.y + this.s;
 		const leftEdge = this.x + 5;
-		const lineHeight = 14;
 		const prec = 2;
 
 		drawLabel(ctx, "pos: " + this.model.particle.pos.x.toFixed(prec) + "," + this.model.particle.pos.y.toFixed(prec),
