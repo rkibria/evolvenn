@@ -67,7 +67,7 @@ body {
 <div id="PROGRESS_TEXT"></div><br>
 <button class="button button1" onclick="onRestartButton()">Restart</button>
 <br>
-Population size: <input type="number" id="ID_POP_SIZE" min="0" value="500"><br>
+Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
 Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100"><br>
@@ -212,7 +212,7 @@ Individual.prototype.evaluate = function()
 		}
 		else {
 			const distRough = Math.trunc(dist / 25);
-			fitness[0] += square(distRough) + (100 * avl);
+			fitness[0] += distRough;
 		}
 	}
 	this.positions.push(positions);
