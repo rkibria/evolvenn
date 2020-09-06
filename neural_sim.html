@@ -112,7 +112,7 @@ window.onload = function() {
 		g_pilot.run(ctx, !g_paused);
 
 		const dist = g_pilot.visualizer.model.particle.pos.length();
-		if(dist <= 10) {
+		if(dist <= 20) {
 			setPause(true);
 		}
 
@@ -122,8 +122,11 @@ window.onload = function() {
 }
 
 function onRandomizePosButton() {
-	g_pilot.visualizer.model.particle.pos.randomInUnitDisk().multiplyScalar( 300 );
-	g_pilot.visualizer.model.particle.vel.randomInUnitDisk().multiplyScalar( 10 );
+	const pos = new Vec2();
+	pos.randomInUnitDisk().multiplyScalar( 500 );
+	const vel = new Vec2();
+	g_pilot.visualizer.model.particle.reset(pos, vel);
+	setPause(false);
 }
 
 function onSetPosButton() {

@@ -8,7 +8,7 @@
 */
 function Population(pop_size, idv_factory)
 {
-	this.keepBest = true;
+	this.keepBest = false;
 	this.elitism = false;
 	this.isFirstGeneration = true;
 	this.individuals = [];

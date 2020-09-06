@@ -11,7 +11,7 @@ function Particle() {
 
 	// Angular velocity (rotation angle applied to dir every tick)
 	this.avl = 0;
-	this.MAX_AVL = 0.1;
+	this.MAX_AVL = 0.25;
 }
 
 /*

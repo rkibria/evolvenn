@@ -211,7 +211,7 @@ Individual.prototype.evaluate = function()
 			break;
 		}
 		else {
-			fitness[0] += distSq;
+			fitness[0] += dist;
 		}
 	}
 	this.positions.push(positions);
@@ -232,7 +232,7 @@ function makePopulation() {
 
 let g_population = makePopulation();
 
-function createStartConditions(count, baseDistance)
+function createStartConditions(count, baseDistance, varyAll=false)
 {
 	const startPos = new Vec2();
 	const startDir = new Vec2();
@@ -244,12 +244,16 @@ function createStartConditions(count, baseDistance)
 	const distance = baseDistance * (1 + Math.trunc(count / variationsPerCircle));
 	startPos.setLengthAngle(distance, Math.trunc(count / dirsPerPoint) * (2 * Math.PI / pointsPerCircle) - Math.PI/2);
 
-	// const variation = Math.sqrt(baseDistance);
-	// startPos.addComponents(getRandomInt(-variation, variation), getRandomInt(-variation, variation));
-
 	startDir.setLengthAngle(1, count * (2 * Math.PI / dirsPerPoint) + Math.PI/2);
 
 	g_start_conditions.push( { pos: startPos, vel: new Vec2(0, 0), dir: startDir } );
+
+	if(varyAll) {
+		for(let i = 0; i < g_start_conditions.length; ++i) {
+			const variation = Math.sqrt(distance) / 2;
+			g_start_conditions[i].pos.addComponents(getRandomInt(-variation, variation), getRandomInt(-variation, variation));
+		}
+	}
 }
 
 createStartConditions(0, BASE_DIST_INC);
@@ -307,7 +311,7 @@ window.onload = function()
 
 			if(currentBest.solves == g_start_conditions.length) {
 				const count = g_start_conditions.length;
-				createStartConditions(count, BASE_DIST_INC);
+				createStartConditions(count, BASE_DIST_INC, true);
 				goToNextCondition = false;
 				g_current_start_condition = 0;
 			}
