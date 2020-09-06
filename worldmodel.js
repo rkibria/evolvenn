@@ -11,6 +11,7 @@ function Particle() {
 
 	// Angular velocity (rotation angle applied to dir every tick)
 	this.avl = 0;
+	this.MAX_AVL = 0.1;
 }
 
 /*
@@ -20,6 +21,8 @@ function Particle() {
 Particle.prototype.run = function(accel, rot) {
 	// Apply angular acceleration
 	this.avl += rot;
+	this.avl = Math.min(this.avl, this.MAX_AVL);
+	this.avl = Math.max(this.avl, -this.MAX_AVL);
 
 	// Apply angular velocity to direction
 	this.dir.rotate(this.avl);

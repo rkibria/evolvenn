@@ -132,11 +132,10 @@ PilotNet.prototype.run = function( outputs, model ) {
 	const accel = Math.min(MAX_ACCEL, outputScale(nnOutputs[0]) * this.accelScale );
 
 	let rot = getRotOutput(nnOutputs[1], nnOutputs[2], this.rotScale);
-	const MAX_AVL = 0.1;
-	if(rot > 0 && model.particle.avl >= MAX_AVL) {
+	if(rot > 0 && model.particle.avl >= model.particle.MAX_AVL) {
 		rot = 0;
 	}
-	else if(rot < 0 && model.particle.avl <= -MAX_AVL) {
+	else if(rot < 0 && model.particle.avl <= -model.particle.MAX_AVL) {
 		rot = 0;
 	}
 
