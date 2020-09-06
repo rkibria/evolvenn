@@ -202,7 +202,7 @@ Individual.prototype.evaluate = function()
 		const dist = Math.sqrt(distSq);
 		// const velSq = g_model.particle.vel.lengthSq();
 		// const vel = Math.sqrt(velSq);
-		// const avl = Math.abs(g_model.particle.avl);
+		const avl = Math.abs(g_model.particle.avl);
 
 		positions.push([g_model.particle.pos.x, g_model.particle.pos.y]);
 
@@ -211,7 +211,8 @@ Individual.prototype.evaluate = function()
 			break;
 		}
 		else {
-			fitness[0] += dist;
+			const distRough = Math.trunc(dist / 25);
+			fitness[0] += square(distRough) + (100 * avl);
 		}
 	}
 	this.positions.push(positions);
@@ -236,9 +237,10 @@ function createStartConditions(count, baseDistance, varyAll=false)
 {
 	const startPos = new Vec2();
 	const startDir = new Vec2();
+	const startVel = new Vec2();
 
-	const dirsPerPoint = 360 / 45;
-	const pointsPerCircle = 30;
+	const dirsPerPoint = 4;
+	const pointsPerCircle = 10;
 	const variationsPerCircle = dirsPerPoint * pointsPerCircle;
 
 	const distance = baseDistance * (1 + Math.trunc(count / variationsPerCircle));
@@ -246,12 +248,16 @@ function createStartConditions(count, baseDistance, varyAll=false)
 
 	startDir.setLengthAngle(1, count * (2 * Math.PI / dirsPerPoint) + Math.PI/2);
 
-	g_start_conditions.push( { pos: startPos, vel: new Vec2(0, 0), dir: startDir } );
+	const velVariation = 5;
+	startVel.randomInUnitDisk().multiplyScalar( velVariation );
+
+	g_start_conditions.push( { pos: startPos, vel: startVel, dir: startDir } );
 
 	if(varyAll) {
 		for(let i = 0; i < g_start_conditions.length; ++i) {
 			const variation = Math.sqrt(distance) / 2;
 			g_start_conditions[i].pos.addComponents(getRandomInt(-variation, variation), getRandomInt(-variation, variation));
+			g_start_conditions[i].vel.randomInUnitDisk().multiplyScalar( velVariation );
 		}
 	}
 }

@@ -125,6 +125,7 @@ function onRandomizePosButton() {
 	const pos = new Vec2();
 	pos.randomInUnitDisk().multiplyScalar( 500 );
 	const vel = new Vec2();
+	vel.randomInUnitDisk().multiplyScalar( 5 );
 	g_pilot.visualizer.model.particle.reset(pos, vel);
 	setPause(false);
 }
