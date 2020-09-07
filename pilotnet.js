@@ -71,7 +71,7 @@ PilotNet.prototype.fromText = function(text) {
 PilotNet.prototype.run = function( outputs, model ) {
 	function inputScale(i) {
 		// logarithmic scaling to avoid huge values
-		return Math.sign(i) * Math.log(Math.abs(i) + 1);
+		return Math.sign(i) * Math.log10(Math.abs(i) + 1);
 	}
 
 	this.inputs[ 0 ] = inputScale(model.particle.pos.x);
@@ -104,7 +104,7 @@ PilotNet.prototype.run = function( outputs, model ) {
 	const MAX_ROT = 0.05;
 
 	function outputScale(i) {
-		return Math.log(Math.max(0, i) + 1);
+		return Math.log10(Math.max(0, i) + 1);
 	}
 
 	function getRotOutput(upValue, downValue, rotScale) {

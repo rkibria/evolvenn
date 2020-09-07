@@ -291,7 +291,7 @@ window.onload = function()
 			+ (g_current_start_condition + 1) + " / " + g_start_conditions.length;
 
 		const halflife_factor = (g_mutation_halflife > 0)
-			? Math.pow(2, -generation / g_mutation_halflife) : 1;
+			? Math.pow(2, -(generation % 1000) / g_mutation_halflife) : 1;
 		const spread = Math.max(g_mutation_spread * halflife_factor, g_mutation_spread * 0.01);
 
 		if(g_current_start_condition == 0) {
