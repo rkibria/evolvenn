@@ -99,6 +99,8 @@ const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), 10, 10, 780 )
 let g_paused = false;
 setPause(g_paused);
 
+onRandomizePosButton();
+
 window.onload = function() {
 	const ctx = canvas.getContext('2d');
 	ctx.fillStyle = "black";
