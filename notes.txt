@@ -20,6 +20,14 @@ TRY:
 
 - longer sim time?
 
+- max speed when close to center?
+
+vel : (EA will minimize speed)
+
+1/vel : maximize speed
+
+- fuzzify the thrusters? add friction?
+
 
 ### PilotNet( [ 4, 4] ), f = sum of squared lengths of final positions and velocities, 10 s sim time, start pos 0,300 vel 0,0
 

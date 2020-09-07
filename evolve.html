@@ -211,8 +211,7 @@ Individual.prototype.evaluate = function()
 			break;
 		}
 		else {
-			const distRough = Math.trunc(dist / 25);
-			fitness[0] += distRough;
+			fitness[0] += dist;
 		}
 	}
 	this.positions.push(positions);
