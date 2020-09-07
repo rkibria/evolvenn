@@ -170,10 +170,6 @@ Individual.prototype.copy = function(other)
 	this.pilotNet.copy(other.pilotNet);
 }
 
-function square(x) {
-	return x * x;
-}
-
 function safeInvert(x) {
 	return 1 / (1 + x);
 }
@@ -200,18 +196,18 @@ Individual.prototype.evaluate = function()
 
 		const distSq = g_model.particle.pos.lengthSq();
 		const dist = Math.sqrt(distSq);
-		// const velSq = g_model.particle.vel.lengthSq();
-		// const vel = Math.sqrt(velSq);
-		const avl = Math.abs(g_model.particle.avl);
+		const velSq = g_model.particle.vel.lengthSq();
+		const vel = Math.sqrt(velSq);
+		// const avl = Math.abs(g_model.particle.avl);
 
 		positions.push([g_model.particle.pos.x, g_model.particle.pos.y]);
 
-		if(dist < this.hitDistance) {
+		if(dist <= this.hitDistance) {
 			this.solves += 1;
 			break;
 		}
 		else {
-			fitness[0] += dist;
+			fitness[0] += (dist - this.hitDistance) + 1.0 / Math.pow(dist - this.hitDistance, 2) * 100 * safeInvert(vel);
 		}
 	}
 	this.positions.push(positions);

@@ -26,6 +26,16 @@ vel : (EA will minimize speed)
 
 1/vel : maximize speed
 
+if far away from center doesnt matter (term disappears if dist large) : + 1/(dist - hit)^3 * 1000 * (1/vel)
+                                                                          ----------------------- at 10 from hit is 1, at 2 is 100, at 1 is 1000
+
+
+if close and slow add a big number
+if close and fast add almost zero
+
+- on hit multiply by time taken?
+
+
 - fuzzify the thrusters? add friction?
 
 
