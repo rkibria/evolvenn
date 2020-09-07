@@ -118,7 +118,7 @@ PilotNet.prototype.run = function( outputs, model ) {
 		// Bigger value determines polarity and strength of rotation, smaller value is ignored
 		let rot = 0;
 		let sign = 1;
-		if(upValue >= downValue) {
+		if(upValue > downValue) {
 			rot = upValue;
 		}
 		else {

@@ -67,7 +67,7 @@ body {
 <div id="PROGRESS_TEXT"></div><br>
 <button class="button button1" onclick="onRestartButton()">Restart</button>
 <br>
-Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
+Population size: <input type="number" id="ID_POP_SIZE" min="0" value="500"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
 Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100"><br>
@@ -315,7 +315,7 @@ window.onload = function()
 				document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.pilotNet.toText();
 			}
 
-			if(currentBest.solves == g_start_conditions.length) {
+			if(currentBest.solves >= g_start_conditions.length - 1) {
 				const count = g_start_conditions.length;
 				createStartConditions(count, BASE_DIST_INC, true);
 				goToNextCondition = false;
