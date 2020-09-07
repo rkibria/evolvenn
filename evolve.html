@@ -188,7 +188,8 @@ Individual.prototype.evaluate = function()
 	g_model.particle.reset( start.pos, start.vel, start.dir );
 
 	const positions = [];
-	for(let time = 0; time < simulationSeconds * 60; ++time) {
+	let time = 0;
+	for(; time < simulationSeconds * 60; ++time) {
 		this.pilotNet.run( g_net_outputs, g_model );
 		const accel = g_net_outputs[0];
 		const rot = g_net_outputs[1];
@@ -207,9 +208,15 @@ Individual.prototype.evaluate = function()
 			break;
 		}
 		else {
-			fitness[0] += (dist - this.hitDistance) + 1.0 / Math.pow(dist - this.hitDistance, 2) * 100 * safeInvert(vel);
+			// fitness[0] += (dist - this.hitDistance) + 1.0 / Math.pow(dist - this.hitDistance, 2) * 100 * safeInvert(vel);
+			fitness[0] += (dist - this.hitDistance);
 		}
 	}
+	fitness[0] *= 1 + time / 60;
+	if(time == simulationSeconds * 60) {
+		fitness[0] *= 2;
+	}
+
 	this.positions.push(positions);
 
 	for(let i = 0; i < this.fitness.length; ++i) {
