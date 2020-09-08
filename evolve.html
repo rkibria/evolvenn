@@ -171,7 +171,9 @@ Individual.prototype.copy = function(other)
 }
 
 function safeInvert(x) {
-	return 1 / (1 + x);
+	const limit = 0.001;
+	const d = (x < limit) ? limit : x;
+	return 1 / d;
 }
 
 Individual.prototype.evaluate = function()
@@ -189,6 +191,7 @@ Individual.prototype.evaluate = function()
 
 	const positions = [];
 	let time = 0;
+	const v1 = new Vec2();
 	for(; time < simulationSeconds * 60; ++time) {
 		this.pilotNet.run( g_net_outputs, g_model );
 		const accel = g_net_outputs[0];
@@ -199,7 +202,7 @@ Individual.prototype.evaluate = function()
 		const dist = Math.sqrt(distSq);
 		const velSq = g_model.particle.vel.lengthSq();
 		const vel = Math.sqrt(velSq);
-		// const avl = Math.abs(g_model.particle.avl);
+		const avl = Math.abs(g_model.particle.avl);
 
 		positions.push([g_model.particle.pos.x, g_model.particle.pos.y]);
 
@@ -209,7 +212,15 @@ Individual.prototype.evaluate = function()
 		}
 		else {
 			// fitness[0] += (dist - this.hitDistance) + 1.0 / Math.pow(dist - this.hitDistance, 2) * 100 * safeInvert(vel);
-			fitness[0] += (dist - this.hitDistance);
+			// fitness[0] += (dist - this.hitDistance);
+			const hd = dist - this.hitDistance;
+			fitness[0] += hd;
+			// fitness[0] += safeInvert(hd) * avl;
+
+			v1.copy(g_model.particle.pos).normalize();
+			v1.rotate(Math.PI / 2);
+			const dp = Math.abs(v1.dot(g_model.particle.dir));
+			fitness[0] += hd * dp;
 		}
 	}
 	fitness[0] *= 1 + time / 60;
