@@ -217,10 +217,14 @@ Individual.prototype.evaluate = function()
 			fitness[0] += hd;
 			// fitness[0] += safeInvert(hd) * avl;
 
-			v1.copy(g_model.particle.pos).normalize();
-			v1.rotate(Math.PI / 2);
-			const dp = Math.abs(v1.dot(g_model.particle.dir));
-			fitness[0] += hd * dp;
+			// v1.copy(g_model.particle.pos).normalize();
+			// v1.rotate(Math.PI / 2);
+			// const dp = Math.abs(v1.dot(g_model.particle.dir));
+			// fitness[0] += hd * dp;
+
+			v1.copy(g_model.particle.pos).multiplyScalar(-1);
+			const a = Math.abs( getVec2Angle(v1, g_model.particle.dir) );
+			fitness[0] += hd * a;
 		}
 	}
 	fitness[0] *= 1 + time / 60;
