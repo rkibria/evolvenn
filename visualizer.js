@@ -147,17 +147,26 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 		const leftEdge = this.x + 5;
 		const prec = 2;
 
-		drawLabel(ctx, "pos: " + this.model.particle.pos.x.toFixed(prec) + "," + this.model.particle.pos.y.toFixed(prec),
+		const p = this.model.particle;
+
+//		const v1 = new Vec2();
+//		drawLabel(ctx, "angle pos/dir: " + (getVec2Angle(p.pos, p.dir) / Math.PI * 180), leftEdge, lowerEdge - 5 * lineHeight, "left");
+//		v1.copy(p.pos).normalize();
+//		drawLabel(ctx, "dot pos/dir: " + (v1.dot(p.dir)), leftEdge, lowerEdge - 5 * lineHeight, "left");
+
+		drawLabel(ctx, "dir: " + p.dir.x.toFixed(prec) + "," + p.dir.y.toFixed(prec),
+			leftEdge, lowerEdge - 4 * lineHeight, "left");
+		drawLabel(ctx, "pos: " + p.pos.x.toFixed(prec) + "," + p.pos.y.toFixed(prec),
 			leftEdge, lowerEdge - 3 * lineHeight, "left");
-		drawLabel(ctx, "vel: " + this.model.particle.vel.x.toFixed(prec) + "," + this.model.particle.vel.y.toFixed(prec),
+		drawLabel(ctx, "vel: " + p.vel.x.toFixed(prec) + "," + p.vel.y.toFixed(prec),
 			leftEdge, lowerEdge - 2 * lineHeight, "left");
-		drawLabel(ctx, "avl: " + this.model.particle.avl.toFixed(prec),
+		drawLabel(ctx, "avl: " + p.avl.toFixed(prec),
 			leftEdge, lowerEdge - 1 * lineHeight, "left");
 
 		// Particle
 		let scale = 1;
-		let dx = this.model.particle.pos.x;
-		let dy = this.model.particle.pos.y;
+		let dx = p.pos.x;
+		let dy = p.pos.y;
 		const edge = this.s / 2;
 		while(Math.abs(dx) > edge || Math.abs(dy) > edge) {
 			scale *= 2;
