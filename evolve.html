@@ -67,7 +67,7 @@ body {
 <div id="PROGRESS_TEXT"></div><br>
 <button class="button button1" onclick="onRestartButton()">Restart</button>
 <br>
-Population size: <input type="number" id="ID_POP_SIZE" min="0" value="500"><br>
+Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
 <br>
 Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
 Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100"><br>
@@ -187,7 +187,8 @@ Individual.prototype.evaluate = function()
 
 	// Set the start condition
 	const start = g_start_conditions[g_current_start_condition];
-	g_model.particle.reset( start.pos, start.vel, start.dir );
+	const pt = g_model.particle;
+	pt.reset( start.pos, start.vel, start.dir );
 
 	const positions = [];
 	let time = 0;
@@ -198,13 +199,13 @@ Individual.prototype.evaluate = function()
 		const rot = g_net_outputs[1];
 		g_model.run( accel, rot );
 
-		const distSq = g_model.particle.pos.lengthSq();
+		const distSq = pt.pos.lengthSq();
 		const dist = Math.sqrt(distSq);
-		const velSq = g_model.particle.vel.lengthSq();
+		const velSq = pt.vel.lengthSq();
 		const vel = Math.sqrt(velSq);
-		const avl = Math.abs(g_model.particle.avl);
+		const avl = Math.abs(pt.avl);
 
-		positions.push([g_model.particle.pos.x, g_model.particle.pos.y]);
+		positions.push([pt.pos.x, pt.pos.y]);
 
 		if(dist <= this.hitDistance) {
 			this.solves += 1;
@@ -217,14 +218,12 @@ Individual.prototype.evaluate = function()
 			fitness[0] += hd;
 			// fitness[0] += safeInvert(hd) * avl;
 
-			// v1.copy(g_model.particle.pos).normalize();
-			// v1.rotate(Math.PI / 2);
-			// const dp = Math.abs(v1.dot(g_model.particle.dir));
-			// fitness[0] += hd * dp;
+			v1.copy(pt.pos).normalize();
+			const dp = v1.dot(pt.dir);
+			const diffDp = Math.abs(dp - (-1));
+			const scale = Math.max(0, -hd + 300);
+			fitness[0] += scale * diffDp;
 
-			v1.copy(g_model.particle.pos).multiplyScalar(-1);
-			const a = Math.abs( getVec2Angle(v1, g_model.particle.dir) );
-			fitness[0] += hd * a;
 		}
 	}
 	fitness[0] *= 1 + time / 60;
