@@ -176,6 +176,8 @@ function safeInvert(x) {
 	return 1 / d;
 }
 
+const tmpV1 = new Vec2();
+
 Individual.prototype.evaluate = function()
 {
 	let fitness = makeFitness();
@@ -192,7 +194,6 @@ Individual.prototype.evaluate = function()
 
 	const positions = [];
 	let time = 0;
-	const v1 = new Vec2();
 	for(; time < simulationSeconds * 60; ++time) {
 		this.pilotNet.run( g_net_outputs, g_model );
 		const accel = g_net_outputs[0];
@@ -201,9 +202,9 @@ Individual.prototype.evaluate = function()
 
 		const distSq = pt.pos.lengthSq();
 		const dist = Math.sqrt(distSq);
-		const velSq = pt.vel.lengthSq();
-		const vel = Math.sqrt(velSq);
-		const avl = Math.abs(pt.avl);
+		// const velSq = pt.vel.lengthSq();
+		// const vel = Math.sqrt(velSq);
+		// const avl = Math.abs(pt.avl);
 
 		positions.push([pt.pos.x, pt.pos.y]);
 
@@ -212,23 +213,25 @@ Individual.prototype.evaluate = function()
 			break;
 		}
 		else {
-			// fitness[0] += (dist - this.hitDistance) + 1.0 / Math.pow(dist - this.hitDistance, 2) * 100 * safeInvert(vel);
-			// fitness[0] += (dist - this.hitDistance);
 			const hd = dist - this.hitDistance;
 			fitness[0] += hd;
-			// fitness[0] += safeInvert(hd) * avl;
-
-			v1.copy(pt.pos).normalize();
-			const dp = v1.dot(pt.dir);
-			const diffDp = Math.abs(dp - (-1));
-			const scale = Math.max(0, -hd + 300);
-			fitness[0] += scale * diffDp;
-
 		}
 	}
 	fitness[0] *= 1 + time / 60;
 	if(time == simulationSeconds * 60) {
 		fitness[0] *= 2;
+	}
+	else {
+		// Hit nose first
+		tmpV1.copy(pt.pos).normalize();
+		const dp = tmpV1.dot(pt.dir);
+		const diffDp = Math.abs(dp - (-1)); // 0..2
+		// 2 (worst): 1, 0 (best): half
+		fitness[0] *= 0.5 + diffDp * 0.25;
+
+		// Hit going as fast as possible
+		const vel = pt.vel.length(); // 0..
+		fitness[0] *= 1 / (1 + vel);
 	}
 
 	this.positions.push(positions);
