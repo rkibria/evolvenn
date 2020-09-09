@@ -202,8 +202,8 @@ Individual.prototype.evaluate = function()
 
 		const distSq = pt.pos.lengthSq();
 		const dist = Math.sqrt(distSq);
-		// const velSq = pt.vel.lengthSq();
-		// const vel = Math.sqrt(velSq);
+		const velSq = pt.vel.lengthSq();
+		const vel = Math.sqrt(velSq);
 		// const avl = Math.abs(pt.avl);
 
 		positions.push([pt.pos.x, pt.pos.y]);
@@ -214,7 +214,8 @@ Individual.prototype.evaluate = function()
 		}
 		else {
 			const hd = dist - this.hitDistance;
-			fitness[0] += hd;
+			fitness[0] += hd % 100;
+			fitness[0] += safeInvert(vel);
 		}
 	}
 	fitness[0] *= 1 + time / 60;
