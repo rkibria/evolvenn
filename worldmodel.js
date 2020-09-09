@@ -4,6 +4,8 @@
 
 function Particle() {
 	this.pos = new Vec2();
+
+	this.MAX_VEL = 5;
 	this.vel = new Vec2();
 
 	// Direction rocket is pointing. Really just an angle but storing it as a unit vector makes it easier to process
@@ -29,6 +31,12 @@ Particle.prototype.run = function(accel, rot) {
 
 	// Accelerate the rocket in the current direction (only pos. accel accepted)
 	this.vel.addScaledVector(this.dir, Math.max(0, accel));
+
+	// Limit velocity to a sane value
+	const curVel = this.vel.length();
+	if(curVel > this.MAX_VEL) {
+		this.vel.multiplyScalar(this.MAX_VEL / curVel);
+	}
 
 	// Move the rocket
 	this.pos.add(this.vel);
