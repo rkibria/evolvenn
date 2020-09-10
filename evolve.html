@@ -214,8 +214,8 @@ Individual.prototype.evaluate = function()
 		}
 		else {
 			const hd = dist - this.hitDistance;
-			fitness[0] += hd % 100;
-			fitness[0] += safeInvert(vel);
+			fitness[0] += 0.5 * hd;
+			fitness[0] += 0.5 * safeInvert(vel);
 		}
 	}
 	fitness[0] *= 1 + time / 60;
@@ -223,6 +223,7 @@ Individual.prototype.evaluate = function()
 		fitness[0] *= 2;
 	}
 	else {
+		/*
 		// Hit nose first
 		tmpV1.copy(pt.pos).normalize();
 		const dp = tmpV1.dot(pt.dir);
@@ -233,6 +234,7 @@ Individual.prototype.evaluate = function()
 		// Hit going as fast as possible
 		const vel = pt.vel.length(); // 0..
 		fitness[0] *= 1 / (1 + vel);
+		*/
 	}
 
 	this.positions.push(positions);
