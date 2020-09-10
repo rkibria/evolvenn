@@ -194,6 +194,7 @@ Individual.prototype.evaluate = function()
 
 	const positions = [];
 	let time = 0;
+	let validSolve = false;
 	for(; time < simulationSeconds * 60; ++time) {
 		this.pilotNet.run( g_net_outputs, g_model );
 		const accel = g_net_outputs[0];
@@ -202,24 +203,37 @@ Individual.prototype.evaluate = function()
 
 		const distSq = pt.pos.lengthSq();
 		const dist = Math.sqrt(distSq);
-		const velSq = pt.vel.lengthSq();
-		const vel = Math.sqrt(velSq);
+		// const velSq = pt.vel.lengthSq();
+		// const vel = Math.sqrt(velSq);
 		// const avl = Math.abs(pt.avl);
 
 		positions.push([pt.pos.x, pt.pos.y]);
 
 		if(dist <= this.hitDistance) {
-			this.solves += 1;
-			break;
+			// Hit nose first
+			tmpV1.copy(pt.pos).normalize();
+			const dp = tmpV1.dot(pt.dir);
+			const diffDp = Math.abs(dp - (-1)); // 0..2, 2 (worst), 0 (best)
+			if(diffDp < 0.5) {
+				this.solves += 1;
+				validSolve = true;
+				break;
+			}
+			else {
+				fitness[0] += 2 * this.hitDistance;
+			}
 		}
 		else {
 			const hd = dist - this.hitDistance;
-			fitness[0] += 0.5 * hd;
-			fitness[0] += 0.5 * safeInvert(vel);
+			fitness[0] += hd;
+			// fitness[0] += 0.5 * safeInvert(vel);
 		}
+
 	}
+
 	fitness[0] *= 1 + time / 60;
-	if(time == simulationSeconds * 60) {
+
+	if(!validSolve) {
 		fitness[0] *= 2;
 	}
 	else {
