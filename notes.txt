@@ -204,6 +204,9 @@ not bad behavior, still does tumbling sometimes but often accelerates directly t
 
 best solution yet, steers toward center consistently and hits nose first
 
+Running time: 80 min 54 sec (WAS CA 60)
+Evaluating start condition 91 / 120
+
 		if(dist <= this.hitDistance) {
 			// Hit nose first
 			tmpV1.copy(pt.pos).normalize();
