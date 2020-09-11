@@ -237,18 +237,24 @@ Individual.prototype.evaluate = function()
 		fitness[0] *= 2;
 	}
 	else {
-		/*
 		// Hit nose first
+		/*
 		tmpV1.copy(pt.pos).normalize();
 		const dp = tmpV1.dot(pt.dir);
 		const diffDp = Math.abs(dp - (-1)); // 0..2
 		// 2 (worst): 1, 0 (best): half
 		fitness[0] *= 0.5 + diffDp * 0.25;
+*/
 
 		// Hit going as fast as possible
-		const vel = pt.vel.length(); // 0..
-		fitness[0] *= 1 / (1 + vel);
-		*/
+		//const vel = pt.vel.length(); // 0..
+		//fitness[0] *= 1 / (1 + vel);
+		
+		// Maximize velocity component pointed towards center
+		tmpV1.copy(pt.pos).normalize().multiplyScalar(-1);
+		const dp = tmpV1.dot(pt.vel);
+		const diffDp = Math.max(0, dp); // 0..
+		fitness[0] *= 1 / (1 + diffDp);
 	}
 
 	this.positions.push(positions);
