@@ -57,9 +57,9 @@ var CSS_COLOR_NAMES = ["White", "Red", "Green", "Blue", "Violet", "Yellow", "Pin
 
 const g_start_time = new Date();
 
-let g_pop_size = 500;
-let g_mutation_spread = 25;
-let g_mutation_halflife = 100;
+const g_pop_size = 1000;
+const g_mutation_spread = 25;
+const g_mutation_halflife = 100;
 
 const BASE_DIST_INC = 100;
 
@@ -167,8 +167,8 @@ Individual.prototype.addFitness = function(fitness, pt)
 Individual.prototype.modifyFitness = function(fitness, pt, time, validSolve)
 {
 	const REWARD_SHORT_RUNS = true;
-	const REWARD_HIT_NOSE_FIRST = true;
-	const REWARD_HIT_HIGH_VELOCITY = true;
+	const REWARD_HIT_NOSE_FIRST = false;
+	const REWARD_HIT_HIGH_VELOCITY = false;
 
 	if(REWARD_SHORT_RUNS) {
 		fitness[0] *= 1 + time / 60;
