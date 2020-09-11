@@ -46,12 +46,11 @@ FitnessGraph.prototype.draw = function( ctx )
 
 	ctx.beginPath();
 	ctx.moveTo( this.x, this.y );
-	const logScale = 2;
 	for( let i = 0; i < this.history.length; ++i ) {
 		const f = this.history[ i ];
 		let lineHeight = 0;
 		if( f >= 0 ) {
-			lineHeight = Math.log( f ) / Math.log( logScale );
+			lineHeight = Math.log10( f );
 			lineHeight *= 5;
 		}
 		else {

@@ -62,22 +62,12 @@ body {
 <script src="population.js"></script>
 
 <canvas id="canvas" width="1024" height="100"></canvas>
-<br>
-<div id="RUNING_TIME_TEXT"></div><br>
-<div id="PROGRESS_TEXT"></div><br>
-<button class="button button1" onclick="onRestartButton()">Restart</button>
-<br>
-Population size: <input type="number" id="ID_POP_SIZE" min="0" value="1000"><br>
-<br>
-Mutation spread: <input type="number" id="ID_MUTATION_SPREAD" min="0" value="25"><br>
-Mutation half-life (#generations, 0 to disable): <input type="number" id="ID_MUTATION_HALFLIFE" min="0" value="100"><br>
-<p id="BEST_SOLUTION">Best solution:</p>
-<textarea id="BEST_SOLUTION_OUT" rows="5" cols="120">
+<div id="STATUS_TEXT"></div>
+<canvas id="canvas2" width="800" height="800" style="border:0px;">Your browser does not support the HTML5 canvas tag.</canvas>
+<div id="BEST_SOLUTION"></div>
+<textarea id="BEST_SOLUTION_OUT" rows="3" cols="120">
 NN definition
 </textarea>
-<br>
-<canvas id="canvas2" width="800" height="800" style="border:0px;">Your browser does not support the HTML5 canvas tag.</canvas>
-<br>
 
 <script>
 
@@ -85,16 +75,9 @@ var CSS_COLOR_NAMES = ["White", "Red", "Green", "Blue", "Violet", "Yellow", "Pin
 
 const g_start_time = new Date();
 
-let g_pop_size = 0;
-let g_mutation_spread = 0;
-let g_mutation_halflife = 0;
-
-function read_parameters() {
-	g_pop_size = parseFloat(document.getElementById("ID_POP_SIZE").value);
-	g_mutation_spread = parseFloat(document.getElementById("ID_MUTATION_SPREAD").value);
-	g_mutation_halflife = parseFloat(document.getElementById("ID_MUTATION_HALFLIFE").value);
-}
-read_parameters();
+let g_pop_size = 500;
+let g_mutation_spread = 25;
+let g_mutation_halflife = 100;
 
 ///////////////////////////////////////////////////////////
 
@@ -254,7 +237,7 @@ Individual.prototype.evaluate = function()
 		tmpV1.copy(pt.pos).normalize().multiplyScalar(-1);
 		const dp = tmpV1.dot(pt.vel);
 		const diffDp = Math.max(0, dp); // 0..
-		fitness[0] *= 1 / (1 + diffDp);
+		fitness[0] *= 1 / Math.sqrt(1 + diffDp);
 	}
 
 	this.positions.push(positions);
@@ -326,11 +309,11 @@ window.onload = function()
 
 		const endTime = new Date();
 		const secondsElapsed = Math.trunc((endTime - g_start_time) / 1000);
-		document.getElementById("RUNING_TIME_TEXT").innerHTML = "Running time: " + Math.trunc(secondsElapsed / 60)
-			+ " min " + Math.trunc(secondsElapsed % 60) + " sec";
 
-		document.getElementById("PROGRESS_TEXT").innerHTML = "Evaluating start condition "
-			+ (g_current_start_condition + 1) + " / " + g_start_conditions.length;
+		let statusText = "Population size: " + g_pop_size;
+		statusText += " | Time: " + Math.trunc(secondsElapsed / 60) + " min " + Math.trunc(secondsElapsed % 60) + " s";
+		statusText += " | Evaluating start condition " + (g_current_start_condition + 1) + " / " + g_start_conditions.length;
+		document.getElementById("STATUS_TEXT").innerHTML = statusText;
 
 		const halflife_factor = (g_mutation_halflife > 0)
 			? Math.pow(2, -(generation % 1000) / g_mutation_halflife) : 1;
@@ -352,8 +335,8 @@ window.onload = function()
 			if(true || generation == 2 || g_best_solution.solution.compareIndividuals(currentBest, g_best_solution.solution) < 0) {
 				g_best_solution.generation = g_fitnessgraph.generation;
 				g_best_solution.solution.copy(currentBest);
-				document.getElementById("BEST_SOLUTION").innerHTML = "Best solution: fitness '"
-					+ g_best_solution.solution.fitness.toString() + "' found at generation " + g_best_solution.generation;
+				document.getElementById("BEST_SOLUTION").innerHTML = "Solution fitness '"
+					+ g_best_solution.solution.fitness.toString() + "' at generation " + g_best_solution.generation;
 				document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.pilotNet.toText();
 			}
 
@@ -378,15 +361,6 @@ window.onload = function()
 		}
 
 	}());
-}
-
-function onRestartButton()
-{
-	read_parameters();
-	g_fitnessgraph.clear();
-	generation = 1;
-	g_population = makePopulation();
-	g_best_solution = initBestSolution();
 }
 
 </script>
