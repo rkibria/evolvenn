@@ -154,15 +154,9 @@ Individual.prototype.evaluate = function()
 		const accel = g_net_outputs[0];
 		const rot = g_net_outputs[1];
 		g_model.run( accel, rot );
-
-		const distSq = pt.pos.lengthSq();
-		const dist = Math.sqrt(distSq);
-		// const velSq = pt.vel.lengthSq();
-		// const vel = Math.sqrt(velSq);
-		// const avl = Math.abs(pt.avl);
-
 		positions.push([pt.pos.x, pt.pos.y]);
 
+		const dist = pt.pos.length();
 		if(dist <= this.hitDistance) {
 			// Hit nose first
 			this.tmpV1.copy(pt.pos).normalize();
