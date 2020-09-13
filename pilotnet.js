@@ -17,6 +17,7 @@ function PilotNet( innerLayers ) {
 
 	this.rotScale = 0.01;
 	this.accelScale = 0.01;
+	this.inputScale = 0.01;
 }
 
 PilotNet.prototype.copy = function(other) {
@@ -24,6 +25,7 @@ PilotNet.prototype.copy = function(other) {
 	this.nnet.copy(other.nnet);
 	this.rotScale = other.rotScale;
 	this.accelScale = other.accelScale;
+	this.inputScale = other.inputScale;
 }
 
 PilotNet.prototype.randomize = function() {
@@ -39,12 +41,16 @@ PilotNet.prototype.mutate = function(spread) {
 
 	this.accelScale += scaleFactor * spread * (gaussianRand() - 0.5);
 	this.accelScale = Math.max(0.001, this.accelScale);
+
+	this.inputScale += scaleFactor * spread * (gaussianRand() - 0.5);
+	this.inputScale = Math.max(0.001, this.inputScale);
 }
 
 PilotNet.prototype.toText = function() {
 	const serialObj = {
 		rotScale: this.rotScale,
 		accelScale: this.accelScale,
+		inputScale: this.inputScale,
 		nnet: this.nnet.toText()
 	};
 	return JSON.stringify(serialObj);
@@ -55,6 +61,7 @@ PilotNet.prototype.fromText = function(text) {
 	this.nnet.fromText(rawObject.nnet);
 	this.rotScale = rawObject.rotScale;
 	this.accelScale = rawObject.accelScale;
+	this.inputScale = rawObject.inputScale;
 }
 
 /*
@@ -67,8 +74,8 @@ PilotNet.prototype.run = function( outputs, model ) {
 		return Math.sign(i) * Math.log10(Math.abs(i) + 1);
 	}
 
-	this.inputs[ 0 ] = inputScale(model.particle.pos.x);
-	this.inputs[ 1 ] = inputScale(model.particle.pos.y);
+	this.inputs[ 0 ] = this.inputScale * model.particle.pos.x;
+	this.inputs[ 1 ] = this.inputScale * model.particle.pos.y;
 
 	this.inputs[ 2 ] = model.particle.vel.x;
 	this.inputs[ 3 ] = model.particle.vel.y;
@@ -118,5 +125,5 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 function makePilotNet()
 {
-	return new PilotNet( [ 7, 7, 7 ] );
+	return new PilotNet( [ 7, 7 ] );
 }
