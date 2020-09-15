@@ -132,71 +132,11 @@ Individual.prototype.copy = function(other)
 	this.pilotNet.copy(other.pilotNet);
 }
 
-// Returns [validSolve, breakNow]
-Individual.prototype.addFitness = function(fitness, pt)
-{
-	const REWARD_HIT_NOSE_FIRST = true;
-
-	const dist = pt.pos.length();
-	if(dist <= this.hitDistance) {
-		if(REWARD_HIT_NOSE_FIRST) {
-			this.tmpV1.copy(pt.pos).normalize();
-			const dp = this.tmpV1.dot(pt.dir);
-			const diffDp = Math.abs(dp - (-1)); // 0..2, 2 (worst), 0 (best)
-			if(diffDp < 0.5) {
-				this.solves += 1;
-				return [true, true];
-			}
-			else {
-				fitness[0] += 2 * this.hitDistance;
-				return [false, false];
-			}
-		}
-		else {
-			this.solves += 1;
-			return [true, true];
-		}
-	}
-	else {
-		const hd = dist - this.hitDistance;
-		fitness[0] += hd;
-		return [false, false];
-	}
-}
-
-Individual.prototype.modifyFitness = function(fitness, pt, time, validSolve)
-{
-	const REWARD_SHORT_RUNS = true;
-	const REWARD_HIT_NOSE_FIRST = false;
-	const REWARD_HIT_HIGH_VELOCITY = false;
-
-	if(REWARD_SHORT_RUNS) {
-		fitness[0] *= 1 + time / 60;
-	}
-
-	if(!validSolve) {
-		fitness[0] *= 2;
-	}
-	else {
-		if(REWARD_HIT_NOSE_FIRST) {
-			this.tmpV1.copy(pt.pos).normalize();
-			const dp = this.tmpV1.dot(pt.dir);
-			const diffDp = Math.abs(dp - (-1)); // 0..2
-			// 2 (worst): 1, 0 (best): half
-			fitness[0] *= 0.5 + diffDp * 0.25;
-		}
-
-		if(REWARD_HIT_HIGH_VELOCITY) {
-			this.tmpV1.copy(pt.pos).normalize().multiplyScalar(-1);
-			const dp = this.tmpV1.dot(pt.vel);
-			const diffDp = Math.max(0, dp); // 0..
-			fitness[0] *= 1 / Math.sqrt(1 + diffDp);
-		}
-	}
-}
-
 Individual.prototype.evaluate = function()
 {
+	let fitness = makeFitness();
+	const simulationSeconds = 10;
+
 	if(g_current_start_condition == 0) {
 		this.positions = [];
 	}
@@ -206,24 +146,43 @@ Individual.prototype.evaluate = function()
 	const pt = g_model.particle;
 	pt.reset( start.pos, start.vel, start.dir );
 
-	// Run simulation
-	let fitness = makeFitness();
 	const positions = [];
-	let validSolve = false;
-	const simulationSeconds = 10;
 	let time = 0;
+	let validSolve = false;
 	for(; time < simulationSeconds * 60; ++time) {
 		this.pilotNet.run( g_net_outputs, g_model );
 		const accel = g_net_outputs[0];
 		const rot = g_net_outputs[1];
 		g_model.run( accel, rot );
+
 		positions.push([pt.pos.x, pt.pos.y]);
-		[validSolve, breakNow] = this.addFitness(fitness, pt);
-		if(breakNow) {
-			break;
+
+		const dist = pt.pos.length();
+		if(dist <= this.hitDistance) {
+			// Hit nose first
+			this.tmpV1.copy(pt.pos).normalize();
+			const dp = this.tmpV1.dot(pt.dir);
+			const diffDp = Math.abs(dp - (-1)); // 0..2, 2 (worst), 0 (best)
+			if(diffDp < 0.5) {
+				this.solves += 1;
+				validSolve = true;
+				break;
+			}
+			else {
+				fitness[0] += 2 * this.hitDistance;
+			}
+		}
+		else {
+			const hd = dist - this.hitDistance;
+			fitness[0] += hd;
 		}
 	}
-	this.modifyFitness(fitness, pt, time, validSolve);
+
+	fitness[0] *= 1 + time / 60;
+
+	if(!validSolve) {
+		fitness[0] *= 2;
+	}
 
 	this.positions.push(positions);
 
