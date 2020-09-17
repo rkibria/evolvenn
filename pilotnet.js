@@ -17,6 +17,8 @@ function PilotNet( innerLayers ) {
 
 	this.rotScale = 0.01;
 	this.accelScale = 0.01;
+
+	this.MAX_ACCEL = 0.1;
 }
 
 PilotNet.prototype.copy = function(other) {
@@ -80,9 +82,6 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 	const nnOutputs = this.nnet.run( this.inputs );
 
-	const MAX_ACCEL = 0.1;
-	const MAX_ROT = 0.05;
-
 	function outputScale(i) {
 		return Math.log10(Math.max(0, i) + 1);
 	}
@@ -102,7 +101,7 @@ PilotNet.prototype.run = function( outputs, model ) {
 		return rot;
 	}
 
-	const accel = Math.min(MAX_ACCEL, outputScale(nnOutputs[0]) * this.accelScale );
+	const accel = Math.min(this.MAX_ACCEL, outputScale(nnOutputs[0]) * this.accelScale );
 
 	let rot = getRotOutput(nnOutputs[1], nnOutputs[2], this.rotScale);
 	if(rot > 0 && model.particle.avl >= model.particle.MAX_AVL) {
