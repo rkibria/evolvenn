@@ -151,8 +151,8 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 
 		const v1 = new Vec2();
 //		drawLabel(ctx, "angle pos/dir: " + (getVec2Angle(p.pos, p.dir) / Math.PI * 180), leftEdge, lowerEdge - 5 * lineHeight, "left");
-		v1.copy(p.pos).normalize().multiplyScalar(-1);
-		drawLabel(ctx, "dot pos/vel: " + (v1.dot(p.vel)), leftEdge, lowerEdge - 5 * lineHeight, "left");
+//		v1.copy(p.pos).normalize().multiplyScalar(-1);
+//		drawLabel(ctx, "dot pos/vel: " + (v1.dot(p.vel)), leftEdge, lowerEdge - 5 * lineHeight, "left");
 
 		drawLabel(ctx, "dir: " + p.dir.x.toFixed(prec) + "," + p.dir.y.toFixed(prec),
 			leftEdge, lowerEdge - 4 * lineHeight, "left");
