@@ -118,7 +118,7 @@ Vec2.prototype.multiplyVectors = function(a, b) {
 }
 
 Vec2.prototype.normalize = function() {
-	if(this.x != 0 && this.y != 0) {
+	if(!(this.x == 0 && this.y == 0)) {
 		return this.divideScalar(this.length());
 	}
 	return this;
