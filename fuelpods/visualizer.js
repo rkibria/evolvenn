@@ -205,7 +205,7 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 
 			const r2p = this._v1;
 			r2p.copy(podPos).sub(this.model.rocket.pos).normalize();
-			const angle = getVec2Angle(r2p, this.model.rocket.dir) / Math.PI * 180;
+			const angle = getVec2Angle(this.model.rocket.dir, r2p) / Math.PI * 180;
 
 			drawLabel(ctx, "d: " + dist.toFixed(0), this.center.x + podPos.x / scale, this.center.y - podPos.y / scale);
 			drawLabel(ctx, "a: " + angle.toFixed(0), this.center.x + podPos.x / scale, this.center.y - podPos.y / scale + 20);
