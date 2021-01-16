@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>Neuro experiment 2 - Neural simulation</title>
+<style>
+body {background-color: black;}
+
+html *
+{
+	font-size: 1em;
+	color: lightgray;
+	font-family: Arial;
+}
+
+.float-left-child {
+	float: left;
+}
+
+/* base css */
+body {
+	padding: 0px;
+}
+.parent {
+	padding: 0px
+}
+.child {
+	padding: 5px
+}
+
+.button {
+	background-color: #303030;
+	width: 150px;
+	border: solid 2px lightgray;
+	color: lightgray;
+	padding: 5px 3px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	margin: 4px 2px;
+	cursor: pointer;
+}
+
+.button1 {font-size: 16px;}
+
+</style>
+</head>
+
+<body>
+
+<script src="../drawing.js"></script>
+<script src="../vec2.js"></script>
+<script src="../random.js"></script>
+<script src="../mouse.js"></script>
+<script src="../neurallayer.js"></script>
+<script src="../neuralnet.js"></script>
+<script src="worldmodel.js"></script>
+<script src="visualizer.js"></script>
+<script src="pilotnet.js"></script>
+<script src="neuralpilot.js"></script>
+
+<div class='parent'>
+	<div class='child float-left-child'>
+		<canvas id="canvas" width="800" height="800" style="border:0px;">Your browser does not support the HTML5 canvas tag.</canvas>
+	</div>
+	<div class='child float-left-child'>
+		<div class='parent'>
+			<div class='child float-left-child'>
+				<button class="button button1" onclick="onPauseButton()">Toggle pause</button><br>
+				<p id="PAUSE_STATUS">Pause OFF</p>
+				<hr>
+				<button class="button button1" onclick="onRandomizePosButton()">Randomize pos.</button><br>
+				<button class="button button1" onclick="onSetPosButton()">Set pos.</button><br>
+				<label for="ID_POS_X" title="x position">x</label> <input type="number" id="ID_POS_X" value=0><br>
+				<label for="ID_POS_Y" title="y position">y</label> <input type="number" id="ID_POS_Y" value=-300><br>
+				<hr>
+				Network setup:<br>
+				<textarea id="ID_NET_SETUP" rows="5" cols="30"></textarea><br>
+				<button class="button button1" onclick="onLoadNetworkButton()">Load network</button><br>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+
+const canvas = document.getElementById('canvas');
+const canvasW = canvas.scrollWidth, canvasH = canvas.scrollHeight;
+
+const mouse = captureMouse(canvas);
+const mouseclick = captureMouseclick(canvas);
+
+const pilotNet = makePilotNet();
+pilotNet.randomize();
+document.getElementById("ID_NET_SETUP").value = pilotNet.toText();
+const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), 10, 10, 780 ), pilotNet );
+onLoadNetworkButton();
+
+let g_paused = false;
+setPause(g_paused);
+
+onRandomizePosButton();
+
+window.onload = function() {
+	const ctx = canvas.getContext('2d');
+	ctx.fillStyle = "black";
+	ctx.fillRect(0, 0, canvasW, canvasH);
+
+	(function drawFrame () {
+		window.requestAnimationFrame(drawFrame, canvas);
+		ctx.clearRect(0, 0, canvasW, canvasH);
+		// const t0 = performance.now();
+
+		g_pilot.run(ctx, !g_paused);
+
+
+		// const t1 = performance.now();
+		// console.log((t1 - t0) + " ms");
+	}());
+}
+
+function onRandomizePosButton() {
+	const pos = new Vec2();
+	pos.randomInUnitDisk().multiplyScalar( 500 );
+	const vel = new Vec2();
+	vel.randomInUnitDisk().multiplyScalar( 5 );
+	g_pilot.visualizer.model.rocket.reset(pos, vel);
+	setPause(false);
+}
+
+function onSetPosButton() {
+	const x = parseFloat(document.getElementById("ID_POS_X").value);
+	const y = parseFloat(document.getElementById("ID_POS_Y").value);
+	const pos = new Vec2(x, y);
+	const vel = new Vec2();
+	g_pilot.visualizer.model.rocket.reset(pos, vel);
+}
+
+function onLoadNetworkButton() {
+	g_pilot.pilotNet.fromText(document.getElementById("ID_NET_SETUP").value);
+}
+
+function onPauseButton() {
+	setPause(!g_paused);
+}
+
+function setPause(doPause) {
+	g_paused = doPause;
+	document.getElementById("PAUSE_STATUS").innerHTML = "Pause " + (g_paused ? "ON" : "OFF");
+}
+
+</script>
+
+</body>
+</html>
