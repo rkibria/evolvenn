@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<title>Neuro experiment 2 - Manual simulation</title>
+<style>
+body {background-color: black;}
+
+html *
+{
+	font-size: 1em;
+	color: lightgray;
+	font-family: Arial;
+}
+</style>
+</head>
+
+<body>
+
+<script src="../drawing.js"></script>
+<script src="../vec2.js"></script>
+<script src="../random.js"></script>
+<script src="worldmodel.js"></script>
+<script src="visualizer.js"></script>
+
+<div class='parent'>
+	<div class='child float-left-child'>
+		<canvas id="canvas" width="800" height="800" style="border:0px;">Your browser does not support the HTML5 canvas tag.</canvas>
+	</div>
+</div>
+
+<script>
+
+const canvas = document.getElementById('canvas');
+const canvasW = canvas.scrollWidth, canvasH = canvas.scrollHeight;
+
+function ManualController(visualizer) {
+	this.visualizer = visualizer;
+	this.accel = 0;
+	this.rot = 0;
+}
+
+/*
+	Run model and visualize in context ctx
+*/
+ManualController.prototype.run = function(ctx) {
+	this.visualizer.model.run(this.accel, this.rot);
+	this.visualizer.draw(ctx);
+	this.accel = 0;
+	this.rot = 0;
+}
+
+ManualController.prototype.keydown = function(e) {
+	if(e.keyCode == 87) { // W: accelerate
+		this.accel = 0.1;
+	}
+	else if(e.keyCode == 65) { // A: turn anti-clockwise
+		this.rot = 0.01;
+	}
+	else if(e.keyCode == 68) { // D: turn clockwise
+		this.rot = -0.01;
+	}
+}
+
+const g_manualcontroller = new ManualController(new Visualizer(new WorldModel(), 10, 10, 780));
+window.addEventListener('keydown', function(e) { g_manualcontroller.keydown(e); });
+
+window.onload = function() {
+	const ctx = canvas.getContext('2d');
+	ctx.fillStyle = "black";
+	ctx.fillRect(0, 0, canvasW, canvasH);
+
+	(function drawFrame () {
+		window.requestAnimationFrame(drawFrame, canvas);
+		ctx.clearRect(0, 0, canvasW, canvasH);
+		// const t0 = performance.now();
+
+		g_manualcontroller.run(ctx);
+
+		// const t1 = performance.now();
+		// console.log((t1 - t0) + " ms");
+	}());
+}
+
+</script>
+
+</body>
+</html>

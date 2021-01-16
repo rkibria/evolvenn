@@ -1,0 +1,273 @@
+/*
+	Draw a model into a context
+
+	Also stores reference to the model so can be used as the sole storage.
+	The drawing method does not automatically run the model.
+*/
+
+// x,y = top left, s = edge length of square display
+function Visualizer(model, x, y, s) {
+	this.model = model;
+	this.x = x;
+	this.y = y;
+	this.s = s;
+
+	this.center = new Vec2(this.x + this.s/2, this.y + this.s/2);
+	this.distanceMarker = 20;
+
+	this._accelArrow = new Vec2();
+	this._rocketFrame = 0;
+
+	this._v1 = new Vec2();
+}
+
+Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null, rot=null) {
+	ctx.save();
+	ctx.translate( x, y );
+
+	ctx.rotate( -(this.model.rocket.dir.angle() - Math.PI / 2) );
+
+	ctx.beginPath();
+	ctx.lineWidth = "2";
+	ctx.fillStyle = "cadetblue";
+	ctx.moveTo( -10, 20 );
+	ctx.lineTo( -5, 15 );
+	ctx.lineTo( -5, -15 );
+	ctx.lineTo( 0, -20 );
+	ctx.lineTo( 5, -15 );
+	ctx.lineTo( 5, 15 );
+	ctx.lineTo( 10, 20 );
+	ctx.closePath();
+	ctx.fill();
+
+	ctx.save()
+	ctx.strokeStyle = "darkgrey";
+	ctx.setLineDash([1, 15]);
+	ctx.beginPath();
+	ctx.arc(0, 0, this.model.ROCKET_SIZE, 0, 2 * Math.PI);
+	ctx.stroke();
+	ctx.restore();
+
+	if( accel != null ) {
+		if(accel > 0) {
+			ctx.beginPath();
+			ctx.fillStyle = "orange";
+			ctx.moveTo( 0, 20 );
+			ctx.lineTo( 3, 23 );
+			ctx.lineTo( 0, 30 + this._rocketFrame * 2 + Math.min( accel, 5 ) * 15 );
+			ctx.lineTo( -3, 23 );
+			ctx.closePath();
+			ctx.fill();
+		}
+
+		const rotFlameSize = 2;
+		if(rot > 0) {
+			ctx.beginPath();
+			ctx.fillStyle = "orange";
+			ctx.moveTo( -10, 20 );
+			ctx.lineTo( -10 - rotFlameSize, 20 - rotFlameSize );
+			ctx.lineTo( -10 - 2 * rotFlameSize - this._rocketFrame * 2 + Math.min( rot, rotFlameSize ) * 3, 20 );
+			ctx.lineTo( -10 - rotFlameSize, 20 + rotFlameSize );
+			ctx.closePath();
+			ctx.fill();
+		}
+		else if(rot < 0){
+			ctx.beginPath();
+			ctx.fillStyle = "orange";
+			ctx.moveTo( 10, 20 );
+			ctx.lineTo( 10 + rotFlameSize, 20 - rotFlameSize );
+			ctx.lineTo( 10 + 2 * rotFlameSize + this._rocketFrame * 2 + Math.min( rot, rotFlameSize ) * 3, 20 );
+			ctx.lineTo( 10 + rotFlameSize, 20 + rotFlameSize );
+			ctx.closePath();
+			ctx.fill();
+		}
+
+		this._rocketFrame = ( this._rocketFrame + 1 ) % 5;
+	}
+
+	ctx.restore();
+}
+
+Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
+	ctx.save();
+	const lineHeight = 14;
+
+	// Acceleration indicator
+	if(accel != null && accel > 0) {
+		const minArrowLen = 20;
+		const maxArrowLen = this.s/2 * 0.95;
+		const accelLen = accel;
+		let arrowLen = accelLen * this.s/2;
+		arrowLen = Math.min(arrowLen, maxArrowLen);
+		arrowLen = Math.max(arrowLen, minArrowLen);
+
+		if(this.model != null) {
+			this._accelArrow.copy(this.model.rocket.dir)
+				.normalize()
+				.multiplyScalar(arrowLen)
+				.addComponents(this.center.x, -this.center.y);
+		}
+		this._accelArrow.y *= -1;
+
+		ctx.save();
+		ctx.strokeStyle = "green";
+		ctx.fillStyle = "green"
+		ctx.lineWidth = 1;
+		drawArrowhead(ctx, this.center, this._accelArrow, 15);
+		ctx.beginPath();
+		ctx.moveTo(this.center.x, this.center.y);
+		ctx.lineTo(this._accelArrow.x, this._accelArrow.y);
+		ctx.stroke();
+		ctx.restore();
+
+		drawLabel( ctx, accelLen.toFixed(3), this.center.x, this.center.y );
+	}
+
+	// Rotation label
+	if(rot != null && rot != 0) {
+		drawLabel( ctx, "rot: " + rot.toFixed(3), this.center.x, this.center.y + lineHeight );
+	}
+
+	// Distance marker
+	ctx.save()
+	ctx.strokeStyle = "darkred";
+	ctx.setLineDash([5, 5]);
+	ctx.beginPath();
+	ctx.arc(this.center.x, this.center.y, this.distanceMarker, 0, 2 * Math.PI);
+	ctx.stroke();
+	ctx.restore();
+
+	// Center cross
+	ctx.strokeStyle = "darkgrey";
+	ctx.beginPath();
+	const crossSize = 10;
+	ctx.moveTo(this.center.x - crossSize, this.center.y);
+	ctx.lineTo(this.center.x + crossSize, this.center.y);
+	ctx.stroke(); 
+	ctx.moveTo(this.center.x, this.center.y - crossSize);
+	ctx.lineTo(this.center.x, this.center.y + crossSize);
+	ctx.stroke();
+
+	// Frame
+	ctx.strokeRect(this.x, this.y, this.s, this.s);
+
+	if(this.model != null) {
+		// Position and speed
+		const lowerEdge = this.y + this.s;
+		const leftEdge = this.x + 5;
+		const prec = 2;
+
+		const p = this.model.rocket;
+
+//		drawLabel(ctx, "angle pos/dir: " + (getVec2Angle(p.pos, p.dir) / Math.PI * 180), leftEdge, lowerEdge - 5 * lineHeight, "left");
+//		v1.copy(p.pos).normalize().multiplyScalar(-1);
+//		drawLabel(ctx, "dot pos/vel: " + (v1.dot(p.vel)), leftEdge, lowerEdge - 5 * lineHeight, "left");
+
+		drawLabel(ctx, "fuel: " + p.fuel.toFixed(prec),
+			leftEdge, lowerEdge - 5 * lineHeight, "left");
+		drawLabel(ctx, "dir: " + p.dir.x.toFixed(prec) + "," + p.dir.y.toFixed(prec),
+			leftEdge, lowerEdge - 4 * lineHeight, "left");
+		drawLabel(ctx, "pos: " + p.pos.x.toFixed(prec) + "," + p.pos.y.toFixed(prec),
+			leftEdge, lowerEdge - 3 * lineHeight, "left");
+		drawLabel(ctx, "vel: " + p.vel.x.toFixed(prec) + "," + p.vel.y.toFixed(prec),
+			leftEdge, lowerEdge - 2 * lineHeight, "left");
+		drawLabel(ctx, "avl: " + p.avl.toFixed(prec),
+			leftEdge, lowerEdge - 1 * lineHeight, "left");
+
+		// Rocket
+		let scale = 1;
+		let dx = p.pos.x;
+		let dy = p.pos.y;
+		const edge = this.s / 2;
+		while(Math.abs(dx) > edge || Math.abs(dy) > edge) {
+			scale *= 2;
+			dx /= 2;
+			dy /= 2;
+		}
+		dx = Math.trunc(dx);
+		dy = Math.trunc(dy);
+
+		// Pods
+		ctx.save();
+		ctx.fillStyle = "darkgreen";
+		for(i = 0; i < this.model.pods.length; ++i) {
+			const podPos = this.model.pods[ i ];
+			ctx.beginPath();
+			ctx.arc(this.center.x + podPos.x / scale, this.center.y - podPos.y / scale, this.model.POD_SIZE / scale, 0, 2 * Math.PI);
+			ctx.fill();
+		}
+		ctx.restore();
+
+		// Eyebeams
+		for(i = 0; i < this.model.pods.length; ++i) {
+			const podPos = this.model.pods[ i ];
+			const dist = getVec2Distance(podPos, this.model.rocket.pos);
+
+			const r2p = this._v1;
+			r2p.copy(podPos).sub(this.model.rocket.pos).normalize();
+			const angle = getVec2Angle(r2p, this.model.rocket.dir) / Math.PI * 180;
+
+			drawLabel(ctx, "d: " + dist.toFixed(0), this.center.x + podPos.x / scale, this.center.y - podPos.y / scale);
+			drawLabel(ctx, "a: " + angle.toFixed(0), this.center.x + podPos.x / scale, this.center.y - podPos.y / scale + 20);
+			drawLabel(ctx, r2p.x.toFixed(1) + "/" + r2p.y.toFixed(1), this.center.x + podPos.x / scale, this.center.y - podPos.y / scale + 40);
+		}
+
+		drawLabel(ctx, "scale 1:" + scale.toString(),
+			this.center.x, lowerEdge - 1 * lineHeight, "center");
+		if(scale > 1) {
+			ctx.save();
+			ctx.strokeStyle = "darkgrey";
+			ctx.setLineDash([1, 1]);
+			const scaleBoxSize = this.s / scale;
+			ctx.strokeRect(this.center.x - scaleBoxSize/2, this.center.y - scaleBoxSize/2,
+				scaleBoxSize, scaleBoxSize);
+			ctx.restore();
+		}
+
+		const x = this.center.x + dx;
+		const y = this.center.y - dy;
+		const r = 2;
+
+		this.drawRocket( ctx, x, y, accel, rot );
+
+		// Rocket center mass
+		ctx.save();
+		ctx.fillStyle = "red";
+		ctx.beginPath();
+		ctx.arc(x, y, r, 0, (Math.PI * 2), true);
+		ctx.closePath();
+		ctx.fill();
+		ctx.restore();
+	}
+
+}
+
+// positions is an array of [x,y] arrays
+// always draws at scale 1
+Visualizer.prototype.drawPath = function(ctx, positions, color="white") {
+	ctx.save();
+	ctx.strokeStyle = color;
+	ctx.beginPath();
+	for(let i = 0; i < positions.length; ++i) {
+		const x = positions[i][0];
+		const y = positions[i][1];
+		const ex = this.center.x + x;
+		const ey = this.center.y - y;
+		if(i == 0) {
+			ctx.moveTo( ex, ey );
+
+			ctx.save();
+			ctx.fillStyle = "red";
+			ctx.beginPath();
+			ctx.arc(ex, ey, 5, 0, (Math.PI * 2), true);
+			ctx.closePath();
+			ctx.fill();
+			ctx.restore();
+		}
+		else {
+			ctx.lineTo( ex, ey );
+		}
+	}
+	ctx.stroke();
+	ctx.restore();
+}
