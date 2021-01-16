@@ -225,6 +225,14 @@ function getVec2Distance(v1, v2) {
 	return Math.sqrt(dx * dx + dy * dy);
 }
 
+/// Returns (-PI,PI)
 function getVec2Angle(v1, v2) {
-	return Math.atan2(v2.y, v2.x) - Math.atan2(v1.y, v1.x);
+	let angle = Math.atan2(v2.y, v2.x) - Math.atan2(v1.y, v1.x);
+	if(angle > Math.PI) {
+		angle = angle - 2 * Math.PI;
+	}
+	else if(angle < -Math.PI) {
+		angle = 2 * Math.PI + angle;
+	}
+	return angle;
 }
