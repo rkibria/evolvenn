@@ -199,6 +199,7 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 		ctx.restore();
 
 		// Eyebeams
+		/*
 		for(i = 0; i < this.model.pods.length; ++i) {
 			const podPos = this.model.pods[ i ];
 			const dist = getVec2Distance(podPos, this.model.rocket.pos);
@@ -208,6 +209,7 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 			drawLabel(ctx, "d: " + dist.toFixed(0), this.center.x + podPos.x / scale, this.center.y - podPos.y / scale);
 			drawLabel(ctx, "a: " + angle.toFixed(0), this.center.x + podPos.x / scale, this.center.y - podPos.y / scale + 20);
 		}
+		*/
 
 		drawLabel(ctx, "scale 1:" + scale.toString(),
 			this.center.x, lowerEdge - 1 * lineHeight, "center");

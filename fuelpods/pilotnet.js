@@ -6,6 +6,8 @@
 @param innerLayers Array of neuron counts for each hidden layer (without the output layer)
 */
 function PilotNet( innerLayers ) {
+	// 6: field of vision: 180 degrees, divided in 6 sections of 30 degrees each
+	// 1: avl from model
 	const nInputs = 7;
 	const nOutputs = 3;
 
@@ -19,6 +21,8 @@ function PilotNet( innerLayers ) {
 	this.accelScale = 0.01;
 
 	this.MAX_ACCEL = 0.1;
+
+	this._v1 = new Vec2();
 }
 
 PilotNet.prototype.copy = function(other) {
@@ -64,19 +68,25 @@ PilotNet.prototype.fromText = function(text) {
 @param model
 */
 PilotNet.prototype.run = function( outputs, model ) {
-	function inputScale(i) {
-		// logarithmic scaling to avoid huge values
-		return Math.sign(i) * Math.log10(Math.abs(i) + 1);
+	for(i = 0; i < 6; ++i) {
+		this.inputs[ i ] = 0;
 	}
 
-	this.inputs[ 0 ] = inputScale(model.rocket.pos.x);
-	this.inputs[ 1 ] = inputScale(model.rocket.pos.y);
-
-	this.inputs[ 2 ] = model.rocket.vel.x;
-	this.inputs[ 3 ] = model.rocket.vel.y;
-
-	this.inputs[ 4 ] = model.rocket.dir.x;
-	this.inputs[ 5 ] = model.rocket.dir.y;
+	// Closer pods lead to higher values (inverse of distance), choose the highest for each section (i.e. closest)
+	for(i = 0; i < model.pods.length; ++i) {
+		const podPos = model.pods[ i ];
+		const dist = getVec2Distance(podPos, model.rocket.pos);
+		const r2p = this._v1;
+		r2p.copy(podPos).sub(model.rocket.pos);
+		const angle = Math.trunc( getVec2Angle(model.rocket.dir, r2p) / Math.PI * 180 );
+		if( angle >= -90 && angle < 90) {
+			const section = Math.trunc( ( angle + 90 ) / 30 ); // (0...<180 / 30) = 0...5
+			const invDist = 1 / ( dist + 1 );
+			if( this.inputs[ section ] < invDist ) {
+				this.inputs[ section ] = invDist;
+			}
+		}
+	}
 
 	this.inputs[ 6 ] = model.rocket.avl;
 
