@@ -7,8 +7,10 @@
 */
 function PilotNet( innerLayers ) {
 	// 6: field of vision: 180 degrees, divided in 6 sections of 30 degrees each
+	// 2: velocity
+	// 2: direction
 	// 1: avl from model
-	const nInputs = 7;
+	const nInputs = 11;
 	const nOutputs = 3;
 
 	this.inputs = new Array( nInputs ).fill( 0 );
@@ -88,7 +90,13 @@ PilotNet.prototype.run = function( outputs, model ) {
 		}
 	}
 
-	this.inputs[ 6 ] = model.rocket.avl;
+	this.inputs[ 6 ] = model.rocket.vel.x;
+	this.inputs[ 7 ] = model.rocket.vel.y;
+
+	this.inputs[ 8 ] = model.rocket.dir.x;
+	this.inputs[ 9 ] = model.rocket.dir.y;
+
+	this.inputs[ 10 ] = model.rocket.avl;
 
 	const nnOutputs = this.nnet.run( this.inputs );
 
@@ -127,5 +135,5 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 function makePilotNet()
 {
-	return new PilotNet( [ 7, 7, 7 ] );
+	return new PilotNet( [ 11, 11, 11 ] );
 }
