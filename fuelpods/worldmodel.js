@@ -18,7 +18,7 @@ function Rocket() {
 	// Fuel usage computations
 	this.fuel = 0;
 	this.BASE_FUEL_USE = 0.1; // per tick, always consumed to stay alive
-	this.IDLE_LIFETIME = 50 * 60; // rocket stays "alive" for this many ticks if not fueled and not firing thrust
+	this.IDLE_LIFETIME = 5 * 60; // rocket stays "alive" for this many ticks if not fueled and not firing thrust
 	this.START_FUEL = this.BASE_FUEL_USE * this.IDLE_LIFETIME;
 	this.REFUEL_PER_POD = this.BASE_FUEL_USE * 1 * 60; // each fuel pod adds this much fuel on pickup
 	this.ACCEL_FUEL_MULTI = 1; // multiplier per unit of thrust
@@ -83,13 +83,6 @@ function WorldModel() {
 	this.ROCKET_SIZE = 20;
 	this.POD_SIZE = 10;
 	this.pods = []
-	for(x = -2; x < 3; ++x) {
-		for(y = -2; y < 3; ++y) {
-			if(x == 0 && y == 0)
-				continue;
-			this.pods.push( new Vec2(x * 150, y * 150) );
-		}
-	}
 }
 
 WorldModel.prototype.run = function(accel, rot) {
