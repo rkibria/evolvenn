@@ -57,7 +57,7 @@ var CSS_COLOR_NAMES = ["White", "Red", "Green", "Blue", "Violet", "Yellow", "Pin
 
 const g_start_time = new Date();
 
-const g_pop_size = 500;
+const g_pop_size = 200;
 const g_mutation_spread = 25;
 const g_mutation_halflife = 100;
 
@@ -160,11 +160,13 @@ Individual.prototype.evaluate = function()
 
 		positions.push([rocket.pos.x, rocket.pos.y]);
 
+		let minDist = -1;
 		for(i = 0; i < g_model.pods.length; ++i) {
 			const podPos = g_model.pods[i];
 			const dist = getVec2Distance(podPos, rocket.pos);
-			fitness[0] += dist;
+			minDist = (minDist == -1) ? dist : Math.min(dist, minDist);
 		}
+		fitness[0] += minDist;
 
 		if( rocket.fuel == 0 ) {
 			fuelZeroTime += 1;
@@ -174,7 +176,9 @@ Individual.prototype.evaluate = function()
 		}
 	}
 
-	fitness[0] *= g_model.pods.length + 1;
+	let fMulti = g_model.pods.length + 1;
+	fMulti *= fMulti;
+	fitness[0] *= fMulti;
 
 	this.positions.push(positions);
 
@@ -201,11 +205,11 @@ function createStartConditions()
 	const startVel = new Vec2().randomInUnitDisk().multiplyScalar( 3 );
 
 	const pods = [];
-	for(x = -1; x < 2; ++x) {
-		for(y = -1; y < 2; ++y) {
+	for(x = -2; x < 3; ++x) {
+		for(y = -2; y < 3; ++y) {
 			if(x == 0 || y == 0)
 				continue;
-			pods.push( new Vec2().randomInUnitDisk().multiplyScalar( 50 ).addComponents( x * 300, y * 300 ) );
+			pods.push( new Vec2().randomInUnitDisk().multiplyScalar( 25 ).addComponents( x * 100, y * 100 ) );
 		}
 	}
 
@@ -279,7 +283,9 @@ window.onload = function()
 		g_fitnessgraph.draw( ctx );
 
 		if(goToNextCondition) {
-			g_current_start_condition = ((g_current_start_condition + 1) % g_start_conditions.length);
+			// g_current_start_condition = ((g_current_start_condition + 1) % g_start_conditions.length);
+			g_start_conditions = [];
+			createStartConditions();
 		}
 
 	}());

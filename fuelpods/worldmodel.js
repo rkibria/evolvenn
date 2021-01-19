@@ -20,7 +20,7 @@ function Rocket() {
 	this.BASE_FUEL_USE = 0.1; // per tick, always consumed to stay alive
 	this.IDLE_LIFETIME = 10 * 60; // rocket stays "alive" for this many ticks if not fueled and not firing thrust
 	this.START_FUEL = this.BASE_FUEL_USE * this.IDLE_LIFETIME;
-	this.REFUEL_PER_POD = this.BASE_FUEL_USE * 1 * 60; // each fuel pod adds this much fuel on pickup
+	this.REFUEL_PER_POD = this.BASE_FUEL_USE * 5 * 60; // each fuel pod adds this much fuel on pickup
 	this.ACCEL_FUEL_MULTI = 0.1; // multiplier per unit of thrust
 	this.ROT_FUEL_MULTI = 0.1; // multiplier per unit of rotation
 
