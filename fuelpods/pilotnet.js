@@ -6,7 +6,7 @@
 @param innerLayers Array of neuron counts for each hidden layer (without the output layer)
 */
 function PilotNet( innerLayers ) {
-	// 6: field of vision: 180 degrees, divided in 6 sections of 30 degrees each
+	// 6: field of vision: 360 degrees, divided in 6 sections of 60 degrees each
 	// 2: velocity
 	// 2: direction
 	// 1: avl from model
@@ -81,12 +81,10 @@ PilotNet.prototype.run = function( outputs, model ) {
 		const r2p = this._v1;
 		r2p.copy(podPos).sub(model.rocket.pos);
 		const angle = Math.trunc( getVec2Angle(model.rocket.dir, r2p) / Math.PI * 180 );
-		if( angle >= -90 && angle < 90) {
-			const section = Math.trunc( ( angle + 90 ) / 30 ); // (0...<180 / 30) = 0...5
-			const invDist = 1 / ( dist + 1 );
-			if( this.inputs[ section ] < invDist ) {
-				this.inputs[ section ] = invDist;
-			}
+		const section = Math.trunc( ( angle + 180 ) / 60 ); // (0...<360 / 60) = 0...5
+		const invDist = 1000 / ( dist + 1 );
+		if( this.inputs[ section ] < invDist ) {
+			this.inputs[ section ] = invDist;
 		}
 	}
 
