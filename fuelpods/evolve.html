@@ -160,6 +160,12 @@ Individual.prototype.evaluate = function()
 
 		positions.push([rocket.pos.x, rocket.pos.y]);
 
+		for(i = 0; i < g_model.pods.length; ++i) {
+			const podPos = g_model.pods[i];
+			const dist = getVec2Distance(podPos, rocket.pos);
+			fitness[0] += dist;
+		}
+
 		if( rocket.fuel == 0 ) {
 			fuelZeroTime += 1;
 		}
@@ -168,7 +174,7 @@ Individual.prototype.evaluate = function()
 		}
 	}
 
-	fitness[0] += 1000000000 / lifeTime;
+	fitness[0] *= g_model.pods.length + 1;
 
 	this.positions.push(positions);
 
@@ -267,6 +273,7 @@ window.onload = function()
 			for(let i = 0; i < currentBest.positions.length; ++i) {
 				g_visualizer.drawPath( ctx2, currentBest.positions[i], CSS_COLOR_NAMES[i % CSS_COLOR_NAMES.length] );
 			}
+			g_visualizer.drawPods( ctx2, g_start_conditions[g_current_start_condition].pods, g_model.POD_SIZE );
 		}
 
 		g_fitnessgraph.draw( ctx );

@@ -188,15 +188,7 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 		dy = Math.trunc(dy);
 
 		// Pods
-		ctx.save();
-		ctx.fillStyle = "darkgreen";
-		for(i = 0; i < this.model.pods.length; ++i) {
-			const podPos = this.model.pods[ i ];
-			ctx.beginPath();
-			ctx.arc(this.center.x + podPos.x / scale, this.center.y - podPos.y / scale, this.model.POD_SIZE / scale, 0, 2 * Math.PI);
-			ctx.fill();
-		}
-		ctx.restore();
+		this.drawPods( ctx, this.model.pods, scale, this.model.POD_SIZE / scale );
 
 		// Eyebeams
 		/*
@@ -239,6 +231,18 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 		ctx.restore();
 	}
 
+}
+
+Visualizer.prototype.drawPods = function( ctx, pods, podSize, scale = 1 ) {
+	ctx.save();
+	ctx.fillStyle = "darkgreen";
+	for(i = 0; i < pods.length; ++i) {
+		const podPos = pods[ i ];
+		ctx.beginPath();
+		ctx.arc(this.center.x + podPos.x / scale, this.center.y - podPos.y / scale, podSize, 0, 2 * Math.PI);
+		ctx.fill();
+	}
+	ctx.restore();
 }
 
 // positions is an array of [x,y] arrays
