@@ -40,6 +40,8 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null, rot=null) {
 	ctx.closePath();
 	ctx.fill();
 
+	// Collision marker
+	/*
 	ctx.save()
 	ctx.strokeStyle = "darkgrey";
 	ctx.setLineDash([1, 15]);
@@ -47,6 +49,7 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null, rot=null) {
 	ctx.arc(0, 0, this.model.ROCKET_SIZE, 0, 2 * Math.PI);
 	ctx.stroke();
 	ctx.restore();
+	*/
 
 	if( accel != null ) {
 		if(accel > 0) {
@@ -188,7 +191,7 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 		dy = Math.trunc(dy);
 
 		// Pods
-		this.drawPods( ctx, this.model.pods, scale, this.model.POD_SIZE / scale );
+		this.drawPods( ctx, this.model.pods, this.model.POD_SIZE, scale );
 
 		// Eyebeams
 		/*
@@ -239,7 +242,7 @@ Visualizer.prototype.drawPods = function( ctx, pods, podSize, scale = 1 ) {
 	for(i = 0; i < pods.length; ++i) {
 		const podPos = pods[ i ];
 		ctx.beginPath();
-		ctx.arc(this.center.x + podPos.x / scale, this.center.y - podPos.y / scale, podSize, 0, 2 * Math.PI);
+		ctx.arc(this.center.x + podPos.x / scale, this.center.y - podPos.y / scale, podSize / scale, 0, 2 * Math.PI);
 		ctx.fill();
 	}
 	ctx.restore();
