@@ -131,15 +131,6 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 		drawLabel( ctx, "rot: " + rot.toFixed(3), this.center.x, this.center.y + lineHeight );
 	}
 
-	// Distance marker
-	ctx.save()
-	ctx.strokeStyle = "darkred";
-	ctx.setLineDash([5, 5]);
-	ctx.beginPath();
-	ctx.arc(this.center.x, this.center.y, this.distanceMarker, 0, 2 * Math.PI);
-	ctx.stroke();
-	ctx.restore();
-
 	// Center cross
 	ctx.strokeStyle = "darkgrey";
 	ctx.beginPath();
