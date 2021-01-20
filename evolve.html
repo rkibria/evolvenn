@@ -266,7 +266,8 @@ window.onload = function()
 			g_population.clearFitnesses();
 		}
 
-		g_population.evaluate();
+		while(!g_population.evaluate()) {
+		}
 
 		let goToNextCondition = true;
 		if(g_current_start_condition == g_start_conditions.length - 1) {

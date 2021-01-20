@@ -57,7 +57,7 @@ var CSS_COLOR_NAMES = ["White", "Red", "Green", "Blue", "Violet", "Yellow", "Pin
 
 const g_start_time = new Date();
 
-const g_pop_size = 200;
+const g_pop_size = 100;
 const g_mutation_spread = 25;
 const g_mutation_halflife = 100;
 
@@ -257,7 +257,8 @@ window.onload = function()
 			g_model.pods.push( new Vec2( srcPods[i].x, srcPods[i].y ) );
 		}
 
-		g_population.evaluate();
+		while(!g_population.evaluate()) {
+		}
 
 		let goToNextCondition = true;
 		if(g_current_start_condition == g_start_conditions.length - 1) {
