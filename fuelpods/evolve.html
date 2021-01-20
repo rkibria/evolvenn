@@ -57,7 +57,7 @@ var CSS_COLOR_NAMES = ["White", "Red", "Green", "Blue", "Violet", "Yellow", "Pin
 
 const g_start_time = new Date();
 
-const g_pop_size = 100;
+const g_pop_size = 1000;
 const g_mutation_spread = 25;
 const g_mutation_halflife = 100;
 
@@ -224,6 +224,8 @@ function initBestSolution() {
 g_best_solution = initBestSolution();
 
 let generation = 1;
+let evalRunning = false;
+let nEvaluated = 0;
 window.onload = function()
 {
 	const canvas = document.getElementById('canvas');
@@ -235,59 +237,73 @@ window.onload = function()
 		window.requestAnimationFrame( drawFrame, canvas );
 		ctx.clearRect( 0, 0, canvas.width, canvas.height );
 
+		if(!evalRunning) {
+			evalRunning = true;
+
+			if(g_current_start_condition == 0) {
+				g_population.clearFitnesses();
+			}
+
+			g_model.pods = [];
+			const srcPods = g_start_conditions[g_current_start_condition].pods;
+			for(i = 0; i < srcPods.length; ++i) {
+				g_model.pods.push( new Vec2( srcPods[i].x, srcPods[i].y ) );
+			}
+
+			nEvaluated = 0;
+		}
+
+		const t0 = performance.now();
+		let evalDone = false;
+		do {
+			nEvaluated += 1;
+			evalDone = g_population.evaluate();
+		} while(!evalDone && (performance.now() - t0) <= 100);
+
 		const endTime = new Date();
 		const secondsElapsed = Math.trunc((endTime - g_start_time) / 1000);
-
-		let statusText = "Population size: " + g_pop_size;
+		let statusText = "Evaluated: " + nEvaluated;
+		statusText += " | Population size: " + g_pop_size;
 		statusText += " | Time: " + Math.trunc(secondsElapsed / 60) + " min " + Math.trunc(secondsElapsed % 60) + " s";
 		statusText += " | Evaluating start condition " + (g_current_start_condition + 1) + " / " + g_start_conditions.length;
 		document.getElementById("STATUS_TEXT").innerHTML = statusText;
 
-		const halflife_factor = (g_mutation_halflife > 0)
-			? Math.pow(2, -(generation % 1000) / g_mutation_halflife) : 1;
-		const spread = Math.max(g_mutation_spread * halflife_factor, g_mutation_spread * 0.01);
+		if(evalDone) {
+			evalRunning = false;
 
-		if(g_current_start_condition == 0) {
-			g_population.clearFitnesses();
-		}
+			let goToNextCondition = true;
+			if(g_current_start_condition == g_start_conditions.length - 1) {
+				const halflife_factor = (g_mutation_halflife > 0)
+					? Math.pow(2, -(generation % 1000) / g_mutation_halflife) : 1;
+				const spread = Math.max(g_mutation_spread * halflife_factor, g_mutation_spread * 0.01);
 
-		g_model.pods = [];
-		const srcPods = g_start_conditions[g_current_start_condition].pods;
-		for(i = 0; i < srcPods.length; ++i) {
-			g_model.pods.push( new Vec2( srcPods[i].x, srcPods[i].y ) );
-		}
+				generation += 1;
 
-		while(!g_population.evaluate()) {
-		}
+				const currentBest = g_population.evolve(spread);
+				g_fitnessgraph.push( currentBest.fitnessToNumber() );
 
-		let goToNextCondition = true;
-		if(g_current_start_condition == g_start_conditions.length - 1) {
-			generation += 1;
+				g_best_solution.generation = g_fitnessgraph.generation;
+				g_best_solution.solution.copy(currentBest);
+				document.getElementById("BEST_SOLUTION").innerHTML = "Solution fitness '"
+					+ g_best_solution.solution.fitness.toString() + "' at generation " + g_best_solution.generation;
+				document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.pilotNet.toText();
 
-			const currentBest = g_population.evolve(spread);
-			g_fitnessgraph.push( currentBest.fitnessToNumber() );
-
-			g_best_solution.generation = g_fitnessgraph.generation;
-			g_best_solution.solution.copy(currentBest);
-			document.getElementById("BEST_SOLUTION").innerHTML = "Solution fitness '"
-				+ g_best_solution.solution.fitness.toString() + "' at generation " + g_best_solution.generation;
-			document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.pilotNet.toText();
-
-			ctx2.clearRect( 0, 0, canvas2.width, canvas2.height );
-			g_visualizer.draw( ctx2 );
-			for(let i = 0; i < currentBest.positions.length; ++i) {
-				g_visualizer.drawPath( ctx2, currentBest.positions[i], CSS_COLOR_NAMES[i % CSS_COLOR_NAMES.length] );
+				ctx2.clearRect( 0, 0, canvas2.width, canvas2.height );
+				g_visualizer.draw( ctx2 );
+				for(let i = 0; i < currentBest.positions.length; ++i) {
+					g_visualizer.drawPath( ctx2, currentBest.positions[i], CSS_COLOR_NAMES[i % CSS_COLOR_NAMES.length] );
+				}
+				g_visualizer.drawPods( ctx2, g_start_conditions[g_current_start_condition].pods, g_model.POD_SIZE );
 			}
-			g_visualizer.drawPods( ctx2, g_start_conditions[g_current_start_condition].pods, g_model.POD_SIZE );
+
+			if(goToNextCondition) {
+				// g_current_start_condition = ((g_current_start_condition + 1) % g_start_conditions.length);
+				g_start_conditions = [];
+				createStartConditions();
+			}
 		}
 
 		g_fitnessgraph.draw( ctx );
-
-		if(goToNextCondition) {
-			// g_current_start_condition = ((g_current_start_condition + 1) % g_start_conditions.length);
-			g_start_conditions = [];
-			createStartConditions();
-		}
 
 	}());
 }
