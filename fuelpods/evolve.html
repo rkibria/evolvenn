@@ -205,9 +205,11 @@ function createStartConditions()
 	const startVel = new Vec2().randomInUnitDisk().multiplyScalar( 3 );
 
 	const pods = [];
-	for(x = -2; x < 3; ++x) {
-		for(y = -2; y < 3; ++y) {
-			if(x == 0 || y == 0)
+	for(x = -3; x < 4; ++x) {
+		for(y = -3; y < 4; ++y) {
+			if(x == 0 && y == 0)
+				continue;
+			if(Math.random() < 0.66)
 				continue;
 			pods.push( new Vec2().randomInUnitDisk().multiplyScalar( 25 ).addComponents( x * 100, y * 100 ) );
 		}
