@@ -168,6 +168,11 @@ Individual.prototype.evaluate = function()
 		}
 		fitness[0] += minDist;
 
+		if(g_model.pods.length == 0) {
+			fitness[0] /= lifeTime;
+			break;
+		}
+
 		if( rocket.fuel == 0 ) {
 			fuelZeroTime += 1;
 		}
@@ -179,6 +184,8 @@ Individual.prototype.evaluate = function()
 	let fMulti = g_model.pods.length + 1;
 	fMulti *= fMulti;
 	fitness[0] *= fMulti;
+
+	fitness[0] /= rocket.fuel + 1;
 
 	this.positions.push(positions);
 

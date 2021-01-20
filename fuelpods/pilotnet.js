@@ -11,7 +11,7 @@ function PilotNet( innerLayers ) {
 	// 2: direction
 	// 1: avl from model
 	const nInputs = 11;
-	const nOutputs = 3;
+	const nOutputs = 4;
 
 	this.inputs = new Array( nInputs ).fill( 0 );
 
@@ -20,7 +20,7 @@ function PilotNet( innerLayers ) {
 	this.nnet = new NeuralNet( nInputs, allLayers );
 
 	this.rotScale = 0.01;
-	this.accelScale = 0.01;
+	this.accelScale = 1;
 
 	this.MAX_ACCEL = 0.1;
 
@@ -117,9 +117,13 @@ PilotNet.prototype.run = function( outputs, model ) {
 		return rot;
 	}
 
-	const accel = Math.min(this.MAX_ACCEL, outputScale(nnOutputs[0]) * this.accelScale );
+	const accelThreshold = 1;
+	const bit0 = ((outputScale(nnOutputs[0]) * this.accelScale) > accelThreshold);
+	const bit1 = ((outputScale(nnOutputs[1]) * this.accelScale) > accelThreshold);
+	const accelMulti = (bit0 ? 1 : 0) + (bit1 ? 2 : 0); // 0-3
+	const accel = (this.MAX_ACCEL / 3) * accelMulti;
 
-	let rot = getRotOutput(nnOutputs[1], nnOutputs[2], this.rotScale);
+	let rot = getRotOutput(nnOutputs[2], nnOutputs[3], this.rotScale);
 	if(rot > 0 && model.rocket.avl >= model.rocket.MAX_AVL) {
 		rot = 0;
 	}
