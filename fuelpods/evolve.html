@@ -211,20 +211,27 @@ function createStartConditions(generation)
 	const startDir = new Vec2().setLengthAngle(1, Math.random() * Math.PI * 2);
 	const startVel = new Vec2().randomInUnitDisk().multiplyScalar( 3 );
 
-	const start = 1 + Math.min(3, Math.trunc(generation / 100));
-	const variation = Math.min(25, 5 * Math.trunc(generation / 100));
-	const pods = [];
-	for(x = -start; x < start + 1; ++x) {
-		for(y = -start; y < start + 1; ++y) {
-			if(x == 0 && y == 0)
-				continue;
-			if(Math.random() < 0.5)
-				continue;
-			pods.push( new Vec2().randomInUnitDisk().multiplyScalar( variation ).addComponents( x * 100, y * 100 ) );
-		}
+	const start = 1 + Math.min(3, Math.trunc(generation / 50));
+	const variation = Math.min(200, 5 * Math.trunc(generation / 25));
+
+	if(generation == 0) {
+		const pods = [];
+		g_start_conditions.push( { pos: startPos, vel: startVel, dir: startDir, pods: pods } );
 	}
 
-	g_start_conditions.push( { pos: startPos, vel: startVel, dir: startDir, pods: pods } );
+	g_start_conditions[0].pos.copy(startPos);
+	g_start_conditions[0].vel.copy(startVel);
+	g_start_conditions[0].dir.copy(startDir);
+
+	const pods = g_start_conditions[0].pods;
+	for(let i = 0; i < pods.length; ++i) {
+		pods[i].addComponents( getRandomInt(-10, 10), getRandomInt(-30, 30) );
+	}
+
+	if(Math.max(1, Math.trunc(generation / 10)) % (2 ** pods.length) == 0) {
+		pods.push( new Vec2().randomInUnitDisk().multiplyScalar( 200 + variation ) );
+	}
+
 }
 
 createStartConditions(0);
@@ -309,7 +316,6 @@ window.onload = function()
 
 			if(goToNextCondition) {
 				// g_current_start_condition = ((g_current_start_condition + 1) % g_start_conditions.length);
-				g_start_conditions = [];
 				createStartConditions(generation);
 			}
 		}
