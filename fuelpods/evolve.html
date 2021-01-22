@@ -147,12 +147,7 @@ Individual.prototype.evaluate = function()
 	}
 
 	const positions = [];
-	let fuelZeroTime = 0;
-	const stopAfterFuelZero = 1 * 60;
-	let lifeTime = 0;
-	while( fuelZeroTime < stopAfterFuelZero ) {
-		lifeTime += 1;
-
+	while( rocket.fuel > 0 ) {
 		this.pilotNet.run( g_net_outputs, g_model );
 		const accel = g_net_outputs[0];
 		const rot = g_net_outputs[1];
@@ -160,30 +155,18 @@ Individual.prototype.evaluate = function()
 
 		positions.push([rocket.pos.x, rocket.pos.y]);
 
-		let minDist = -1;
 		for(i = 0; i < g_model.pods.length; ++i) {
 			const podPos = g_model.pods[i];
 			const dist = getVec2Distance(podPos, rocket.pos);
-			minDist = (minDist == -1) ? dist : Math.min(dist, minDist);
+			fitness[0] += dist;
 		}
-		fitness[0] += minDist;
 
 		if(g_model.pods.length == 0) {
-			fitness[0] /= lifeTime;
 			break;
-		}
-
-		if( rocket.fuel == 0 ) {
-			fuelZeroTime += 1;
-		}
-		else {
-			fuelZeroTime = 0;
 		}
 	}
 
-	let fMulti = g_model.pods.length + 1;
-	fMulti *= fMulti;
-	fitness[0] *= fMulti;
+	fitness[0] *= Math.sqrt(g_model.pods.length + 1);
 
 	this.positions.push(positions);
 
@@ -225,7 +208,10 @@ function createStartConditions(addPod = false)
 		}
 	}
 	else {
-		const newSize = g_start_conditions[0].pods.length + 1;
+		let newSize = g_start_conditions[0].pods.length + 1;
+		if(newSize == 16) {
+			newSize = 3;
+		}
 		g_start_conditions[0].pods = [];
 		for(let i = 0; i < newSize; ++i) {
 			g_start_conditions[0].pods.push( new Vec2().randomInUnitDisk().normalize().multiplyScalar( 200 + Math.random() * 200 ) );
