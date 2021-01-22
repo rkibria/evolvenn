@@ -150,7 +150,6 @@ Individual.prototype.evaluate = function()
 	let fuelZeroTime = 0;
 	const stopAfterFuelZero = 1 * 60;
 	let lifeTime = 0;
-	let pathSum = 0;
 	while( fuelZeroTime < stopAfterFuelZero ) {
 		lifeTime += 1;
 
@@ -169,8 +168,6 @@ Individual.prototype.evaluate = function()
 		}
 		fitness[0] += minDist;
 
-		pathSum += g_model.rocket.vel.length();
-
 		if(g_model.pods.length == 0) {
 			fitness[0] /= lifeTime;
 			break;
@@ -187,10 +184,6 @@ Individual.prototype.evaluate = function()
 	let fMulti = g_model.pods.length + 1;
 	fMulti *= fMulti;
 	fitness[0] *= fMulti;
-
-	fitness[0] /= rocket.fuel + 1;
-
-	fitness[0] += pathSum;
 
 	this.positions.push(positions);
 
@@ -210,36 +203,44 @@ function makePopulation() {
 
 let g_population = makePopulation();
 
-function createStartConditions(generation)
+function createStartConditions(addPod = false)
 {
 	const startPos = new Vec2().randomInUnitDisk().multiplyScalar( 50 );
 	const startDir = new Vec2().setLengthAngle(1, Math.random() * Math.PI * 2);
 	const startVel = new Vec2().randomInUnitDisk().multiplyScalar( 3 );
-
-	const start = 1 + Math.min(3, Math.trunc(generation / 50));
-	const variation = Math.min(200, 5 * Math.trunc(generation / 25));
-
-	if(generation == 0) {
-		const pods = [];
-		g_start_conditions.push( { pos: startPos, vel: startVel, dir: startDir, pods: pods } );
+	if(g_start_conditions.length == 0) {
+		g_start_conditions.push( { pos: startPos, vel: startVel, dir: startDir, pods: [] } );
+	}
+	else {
+		g_start_conditions[0].pos.copy(startPos);
+		g_start_conditions[0].vel.copy(startVel);
+		g_start_conditions[0].dir.copy(startDir);
 	}
 
-	g_start_conditions[0].pos.copy(startPos);
-	g_start_conditions[0].vel.copy(startVel);
-	g_start_conditions[0].dir.copy(startDir);
-
-	const pods = g_start_conditions[0].pods;
-	for(let i = 0; i < pods.length; ++i) {
-		pods[i].addComponents( getRandomInt(-10, 10), getRandomInt(-30, 30) );
+	if(!addPod) {
+		const pods = g_start_conditions[0].pods;
+		for(let i = 0; i < pods.length; ++i) {
+			const variation = 10;
+			pods[i].addComponents( getRandomInt(-variation, variation), getRandomInt(-variation, variation) );
+		}
+	}
+	else {
+		const newSize = g_start_conditions[0].pods.length + 1;
+		g_start_conditions[0].pods = [];
+		for(let i = 0; i < newSize; ++i) {
+			g_start_conditions[0].pods.push( new Vec2().randomInUnitDisk().normalize().multiplyScalar( 200 + Math.random() * 200 ) );
+		}
 	}
 
-	if(Math.max(1, Math.trunc(generation / 10)) % (2 ** pods.length) == 0) {
-		pods.push( new Vec2().randomInUnitDisk().multiplyScalar( 200 + variation ) );
+	for(let i = 0; i < g_start_conditions[0].pods.length; ++i) {
+		const v = g_start_conditions[0].pods[i];
+		v.set(Math.min(v.x, 400), Math.min(v.y, 400));
+		v.set(Math.max(v.x, -400), Math.max(v.y, -400));
 	}
 
 }
 
-createStartConditions(0);
+createStartConditions(true);
 
 function initBestSolution() {
 	return { generation: 0, solution: new Individual() };
@@ -249,6 +250,7 @@ g_best_solution = initBestSolution();
 let generation = 1;
 let evalRunning = false;
 let nEvaluated = 0;
+let numSolved = 0;
 window.onload = function()
 {
 	const canvas = document.getElementById('canvas');
@@ -274,6 +276,7 @@ window.onload = function()
 			}
 
 			nEvaluated = 0;
+			numSolved = 0;
 		}
 
 		const t0 = performance.now();
@@ -281,6 +284,7 @@ window.onload = function()
 		do {
 			nEvaluated += 1;
 			evalDone = g_population.evaluate();
+			numSolved += (g_model.pods.length == 0) ? 1 : 0;
 		} while(!evalDone && (performance.now() - t0) <= 100);
 
 		const endTime = new Date();
@@ -288,41 +292,38 @@ window.onload = function()
 		let statusText = "Evaluated: " + nEvaluated;
 		statusText += " | Population size: " + g_pop_size;
 		statusText += " | Time: " + Math.trunc(secondsElapsed / 60) + " min " + Math.trunc(secondsElapsed % 60) + " s";
-		statusText += " | Evaluating start condition " + (g_current_start_condition + 1) + " / " + g_start_conditions.length;
+		statusText += " | Pods: " + g_start_conditions[g_current_start_condition].pods.length;
 		document.getElementById("STATUS_TEXT").innerHTML = statusText;
 
 		if(evalDone) {
 			evalRunning = false;
 
-			let goToNextCondition = true;
-			if(g_current_start_condition == g_start_conditions.length - 1) {
-				const halflife_factor = (g_mutation_halflife > 0)
-					? Math.pow(2, -(generation % 1000) / g_mutation_halflife) : 1;
-				const spread = Math.max(g_mutation_spread * halflife_factor, g_mutation_spread * 0.01);
+			const halflife_factor = (g_mutation_halflife > 0)
+				? Math.pow(2, -(generation % 1000) / g_mutation_halflife) : 1;
+			const spread = Math.max(g_mutation_spread * halflife_factor, g_mutation_spread * 0.01);
 
-				generation += 1;
+			generation += 1;
 
-				const currentBest = g_population.evolve(spread);
-				g_fitnessgraph.push( currentBest.fitnessToNumber() );
+			const currentBest = g_population.evolve(spread);
+			g_fitnessgraph.push( currentBest.fitnessToNumber() );
 
+			const progressStartConditions = (numSolved >= 10);
+			if(progressStartConditions) {
 				g_best_solution.generation = g_fitnessgraph.generation;
 				g_best_solution.solution.copy(currentBest);
-				document.getElementById("BEST_SOLUTION").innerHTML = "Solution fitness '"
-					+ g_best_solution.solution.fitness.toString() + "' at generation " + g_best_solution.generation;
-				document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.pilotNet.toText();
-
-				ctx2.clearRect( 0, 0, canvas2.width, canvas2.height );
-				g_visualizer.draw( ctx2 );
-				for(let i = 0; i < currentBest.positions.length; ++i) {
-					g_visualizer.drawPath( ctx2, currentBest.positions[i], CSS_COLOR_NAMES[i % CSS_COLOR_NAMES.length] );
-				}
-				g_visualizer.drawPods( ctx2, g_start_conditions[g_current_start_condition].pods, g_model.POD_SIZE );
 			}
+			document.getElementById("BEST_SOLUTION").innerHTML = "Solution fitness '"
+				+ g_best_solution.solution.fitness.toString() + "' at generation " + g_best_solution.generation;
+			document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.pilotNet.toText();
 
-			if(goToNextCondition) {
-				// g_current_start_condition = ((g_current_start_condition + 1) % g_start_conditions.length);
-				createStartConditions(generation);
+			ctx2.clearRect( 0, 0, canvas2.width, canvas2.height );
+			g_visualizer.draw( ctx2 );
+			for(let i = 0; i < currentBest.positions.length; ++i) {
+				g_visualizer.drawPath( ctx2, currentBest.positions[i], CSS_COLOR_NAMES[i % CSS_COLOR_NAMES.length] );
 			}
+			g_visualizer.drawPods( ctx2, g_start_conditions[g_current_start_condition].pods, g_model.POD_SIZE );
+
+			createStartConditions(progressStartConditions);
 		}
 
 		g_fitnessgraph.draw( ctx );

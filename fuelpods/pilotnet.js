@@ -6,11 +6,11 @@
 @param innerLayers Array of neuron counts for each hidden layer (without the output layer)
 */
 function PilotNet( innerLayers ) {
-	// 6: field of vision: 360 degrees, divided in 6 sections of 60 degrees each
+	// 12: field of vision: 360 degrees, divided in 12 sections of 30 degrees each
 	// 2: velocity
 	// 2: direction
 	// 1: avl from model
-	const nInputs = 11;
+	const nInputs = 17;
 	// 2: accelBit0 & accelBit1 of accel
 	// 3: polarity, accelBit0 & accelBit1 of rot
 	const nOutputs = 5;
@@ -56,7 +56,7 @@ PilotNet.prototype.fromText = function(text) {
 @param model
 */
 PilotNet.prototype.run = function( outputs, model ) {
-	for(i = 0; i < 6; ++i) {
+	for(i = 0; i < 12; ++i) {
 		this.inputs[ i ] = 0;
 	}
 
@@ -67,20 +67,23 @@ PilotNet.prototype.run = function( outputs, model ) {
 		const r2p = this._v1;
 		r2p.copy(podPos).sub(model.rocket.pos);
 		const angle = Math.trunc( getVec2Angle(model.rocket.dir, r2p) / Math.PI * 180 );
-		const section = Math.trunc( ( angle + 180 ) / 60 ); // (0...<360 / 60) = 0...5
-		const invDist = 1000 / ( dist + 1 );
+		const section = Math.trunc( ( angle + 180 ) / 30 ); // (0...<360 / 30) = 0...11
+		const invDist = 1000 * 1000 / ( dist + 1 ) / ( dist + 1 );
+		this.inputs[ section ] += invDist;
+		/*
 		if( this.inputs[ section ] < invDist ) {
 			this.inputs[ section ] = invDist;
 		}
+		*/
 	}
 
-	this.inputs[ 6 ] = model.rocket.vel.x;
-	this.inputs[ 7 ] = model.rocket.vel.y;
+	this.inputs[ 12 ] = model.rocket.vel.x;
+	this.inputs[ 13 ] = model.rocket.vel.y;
 
-	this.inputs[ 8 ] = model.rocket.dir.x;
-	this.inputs[ 9 ] = model.rocket.dir.y;
+	this.inputs[ 14 ] = model.rocket.dir.x;
+	this.inputs[ 15 ] = model.rocket.dir.y;
 
-	this.inputs[ 10 ] = model.rocket.avl;
+	this.inputs[ 16 ] = model.rocket.avl;
 
 	const nnOutputs = this.nnet.run( this.inputs );
 
@@ -113,5 +116,5 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 function makePilotNet()
 {
-	return new PilotNet( [ 11, 11, 11 ] );
+	return new PilotNet( [ 17, 17, 17 ] );
 }
