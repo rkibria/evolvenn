@@ -150,6 +150,7 @@ Individual.prototype.evaluate = function()
 	let fuelZeroTime = 0;
 	const stopAfterFuelZero = 1 * 60;
 	let lifeTime = 0;
+	let pathSum = 0;
 	while( fuelZeroTime < stopAfterFuelZero ) {
 		lifeTime += 1;
 
@@ -167,6 +168,8 @@ Individual.prototype.evaluate = function()
 			minDist = (minDist == -1) ? dist : Math.min(dist, minDist);
 		}
 		fitness[0] += minDist;
+
+		pathSum += g_model.rocket.vel.length();
 
 		if(g_model.pods.length == 0) {
 			fitness[0] /= lifeTime;
@@ -186,6 +189,8 @@ Individual.prototype.evaluate = function()
 	fitness[0] *= fMulti;
 
 	fitness[0] /= rocket.fuel + 1;
+
+	fitness[0] += pathSum;
 
 	this.positions.push(positions);
 
