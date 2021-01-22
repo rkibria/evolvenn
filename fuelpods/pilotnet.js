@@ -11,16 +11,15 @@ function PilotNet( innerLayers ) {
 	// 2: direction
 	// 1: avl from model
 	const nInputs = 11;
-	const nOutputs = 4;
+	// 2: accelBit0 & accelBit1 of accel
+	// 3: polarity, accelBit0 & accelBit1 of rot
+	const nOutputs = 5;
 
 	this.inputs = new Array( nInputs ).fill( 0 );
 
 	const allLayers = innerLayers.slice();
 	allLayers.push( nOutputs );
 	this.nnet = new NeuralNet( nInputs, allLayers );
-
-	this.rotScale = 0.01;
-	this.accelScale = 1;
 
 	this.MAX_ACCEL = 0.1;
 
@@ -30,8 +29,6 @@ function PilotNet( innerLayers ) {
 PilotNet.prototype.copy = function(other) {
 	console.assert(this.inputs.length == other.inputs.length);
 	this.nnet.copy(other.nnet);
-	this.rotScale = other.rotScale;
-	this.accelScale = other.accelScale;
 }
 
 PilotNet.prototype.randomize = function() {
@@ -40,19 +37,10 @@ PilotNet.prototype.randomize = function() {
 
 PilotNet.prototype.mutate = function(spread) {
 	this.nnet.mutate(spread);
-
-	const scaleFactor = 0.001;
-	this.rotScale += scaleFactor * spread * (gaussianRand() - 0.5);
-	this.rotScale = Math.max(0.001, this.rotScale);
-
-	this.accelScale += scaleFactor * spread * (gaussianRand() - 0.5);
-	this.accelScale = Math.max(0.001, this.accelScale);
 }
 
 PilotNet.prototype.toText = function() {
 	const serialObj = {
-		rotScale: this.rotScale,
-		accelScale: this.accelScale,
 		nnet: this.nnet.toText()
 	};
 	return JSON.stringify(serialObj);
@@ -61,8 +49,6 @@ PilotNet.prototype.toText = function() {
 PilotNet.prototype.fromText = function(text) {
 	const rawObject = JSON.parse(text);
 	this.nnet.fromText(rawObject.nnet);
-	this.rotScale = rawObject.rotScale;
-	this.accelScale = rawObject.accelScale;
 }
 
 /*
@@ -102,28 +88,18 @@ PilotNet.prototype.run = function( outputs, model ) {
 		return Math.log10(Math.max(0, i) + 1);
 	}
 
-	function getRotOutput(upValue, downValue, rotScale) {
-		// Bigger value determines polarity and strength of rotation, smaller value is ignored
-		let rot = 0;
-		let sign = 1;
-		if(upValue > downValue) {
-			rot = upValue;
-		}
-		else {
-			rot = downValue;
-			sign = -1;
-		}
-		rot = outputScale(rot) * sign * rotScale;
-		return rot;
-	}
+	const bitThreshold = 1;
 
-	const accelThreshold = 1;
-	const bit0 = ((outputScale(nnOutputs[0]) * this.accelScale) > accelThreshold);
-	const bit1 = ((outputScale(nnOutputs[1]) * this.accelScale) > accelThreshold);
-	const accelMulti = (bit0 ? 1 : 0) + (bit1 ? 2 : 0); // 0-3
+	const accelBit0 = (outputScale(nnOutputs[0]) > bitThreshold);
+	const accelBit1 = (outputScale(nnOutputs[1]) > bitThreshold);
+	const accelMulti = (accelBit0 ? 1 : 0) + (accelBit1 ? 2 : 0); // 0-3
 	const accel = (this.MAX_ACCEL / 3) * accelMulti;
 
-	let rot = getRotOutput(nnOutputs[2], nnOutputs[3], this.rotScale);
+	const rotPolarityBit = (outputScale(nnOutputs[2]) > bitThreshold);
+	const rotBit0 = (outputScale(nnOutputs[3]) > bitThreshold);
+	const rotBit1 = (outputScale(nnOutputs[4]) > bitThreshold);
+	const rotMulti = (rotBit0 ? 1 : 0) + (rotBit1 ? 2 : 0); // 0-3
+	let rot = (rotPolarityBit ? 1 : -1) * (0.1 / 3) * rotMulti;
 	if(rot > 0 && model.rocket.avl >= model.rocket.MAX_AVL) {
 		rot = 0;
 	}
