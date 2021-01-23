@@ -209,8 +209,8 @@ function createStartConditions(addPod = false)
 	}
 	else {
 		let newSize = g_start_conditions[0].pods.length + 1;
-		if(newSize == 16) {
-			newSize = 3;
+		if(newSize == 21) {
+			newSize = 2;
 		}
 		g_start_conditions[0].pods = [];
 		for(let i = 0; i < newSize; ++i) {
@@ -293,7 +293,7 @@ window.onload = function()
 			const currentBest = g_population.evolve(spread);
 			g_fitnessgraph.push( currentBest.fitnessToNumber() );
 
-			const progressStartConditions = (numSolved >= 10);
+			const progressStartConditions = (numSolved >= 1);
 			if(progressStartConditions) {
 				g_best_solution.generation = g_fitnessgraph.generation;
 				g_best_solution.solution.copy(currentBest);
