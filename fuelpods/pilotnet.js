@@ -10,7 +10,8 @@ function PilotNet( innerLayers ) {
 	// 2: velocity
 	// 2: direction
 	// 1: avl from model
-	this.nInputs = this.nRadarSections + 5;
+	// 1: fuel from model
+	this.nInputs = this.nRadarSections + 6;
 	// 2: accelBit0 & accelBit1 of accel
 	// 3: polarity, accelBit0 & accelBit1 of rot
 	const nOutputs = 5;
@@ -27,7 +28,7 @@ function PilotNet( innerLayers ) {
 }
 
 function makePilotNet() {
-	return new PilotNet( [ 11, 11, 11 ] );
+	return new PilotNet( [ 12, 12, 12 ] );
 }
 
 PilotNet.prototype.copy = function(other) {
@@ -86,6 +87,8 @@ PilotNet.prototype.run = function( outputs, model ) {
 	this.inputs[ this.nRadarSections + 3 ] = model.rocket.dir.y;
 
 	this.inputs[ this.nRadarSections + 4 ] = model.rocket.avl;
+
+	this.inputs[ this.nRadarSections + 5 ] = model.rocket.fuel / 100;
 
 	const nnOutputs = this.nnet.run( this.inputs );
 
