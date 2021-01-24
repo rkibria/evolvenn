@@ -71,16 +71,16 @@ PilotNet.prototype.run = function( outputs, model ) {
 	}
 
 	// Closer pods lead to higher values (inverse of distance), choose the highest for each section (i.e. closest)
+	const fov = 120;
+	const r2p = this._v1;
 	for(i = 0; i < model.pods.length; ++i) {
 		const podPos = model.pods[ i ];
 		const dist = getVec2Distance(podPos, model.rocket.pos);
-		const r2p = this._v1;
 		r2p.copy(podPos).sub(model.rocket.pos);
 		const angle = Math.trunc( getVec2Angle(model.rocket.dir, r2p) / Math.PI * 180 );
-		const fov = 120;
 		if(angle >= -(fov/2) && angle <= (fov/2)) {
 			const section = Math.trunc( ( angle + (fov/2) ) / (fov / this.nRadarSections) );
-			const invDist = 1000 * 1000 / ( dist + 1 ) / ( dist + 1 );
+			const invDist = 1000 / ( dist );
 			this.inputs[ section ] += invDist;
 		}
 	}
