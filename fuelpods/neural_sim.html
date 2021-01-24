@@ -128,6 +128,7 @@ function onRandomizePosButton() {
 	g_pilot.visualizer.model.rocket.reset(pos, vel);
 
 	g_pilot.visualizer.model.pods = [];
+	/*
 	for(x = -2; x < 3; ++x) {
 		for(y = -2; y < 3; ++y) {
 			if(x == 0 || y == 0)
@@ -135,6 +136,8 @@ function onRandomizePosButton() {
 			g_pilot.visualizer.model.pods.push( new Vec2().randomInUnitDisk().multiplyScalar( 25 ).addComponents( x * 100, y * 100 ) );
 		}
 	}
+	*/
+	g_pilot.visualizer.model.pods.push( new Vec2().randomInUnitDisk().normalize().multiplyScalar( 200 + Math.random() * 200 ) );
 
 	setPause(false);
 }
