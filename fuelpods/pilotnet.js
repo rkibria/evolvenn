@@ -11,10 +11,12 @@ function PilotNet( innerLayers ) {
 	// 2: direction
 	// 1: avl from model
 	// 1: fuel from model
-	this.nInputs = this.nRadarSections + 6;
+	// 1: feedback input 0
+	this.nInputs = this.nRadarSections + 7;
 	// 2: accelBit0 & accelBit1 of accel
 	// 3: polarity, accelBit0 & accelBit1 of rot
-	const nOutputs = 5;
+	// 1: feedback output 0
+	const nOutputs = 6;
 
 	this.inputs = new Array( this.nInputs ).fill( 0 );
 
@@ -24,16 +26,19 @@ function PilotNet( innerLayers ) {
 
 	this.MAX_ACCEL = 0.1;
 
+	this.fb0 = 0;
+
 	this._v1 = new Vec2();
 }
 
 function makePilotNet() {
-	return new PilotNet( [ 12, 12, 12 ] );
+	return new PilotNet( [ 13, 13, 13 ] );
 }
 
 PilotNet.prototype.copy = function(other) {
 	console.assert(this.inputs.length == other.inputs.length);
 	this.nnet.copy(other.nnet);
+	this.fb0 = 0;
 }
 
 PilotNet.prototype.randomize = function() {
@@ -72,7 +77,7 @@ PilotNet.prototype.run = function( outputs, model ) {
 		const r2p = this._v1;
 		r2p.copy(podPos).sub(model.rocket.pos);
 		const angle = Math.trunc( getVec2Angle(model.rocket.dir, r2p) / Math.PI * 180 );
-		const fov = 270;
+		const fov = 120;
 		if(angle >= -(fov/2) && angle <= (fov/2)) {
 			const section = Math.trunc( ( angle + (fov/2) ) / (fov / this.nRadarSections) );
 			const invDist = 1000 * 1000 / ( dist + 1 ) / ( dist + 1 );
@@ -89,6 +94,8 @@ PilotNet.prototype.run = function( outputs, model ) {
 	this.inputs[ this.nRadarSections + 4 ] = model.rocket.avl;
 
 	this.inputs[ this.nRadarSections + 5 ] = model.rocket.fuel / 100;
+
+	this.inputs[ this.nRadarSections + 6 ] = this.fb0;
 
 	const nnOutputs = this.nnet.run( this.inputs );
 
@@ -114,6 +121,11 @@ PilotNet.prototype.run = function( outputs, model ) {
 	else if(rot < 0 && model.rocket.avl <= -model.rocket.MAX_AVL) {
 		rot = 0;
 	}
+
+	let fb0 = nnOutputs[5];
+	const absFb0 = Math.abs(fb0);
+	fb0 = ((fb0 < 0) ? -1 : 1) * (absFb0 < 1 ? absFb0 : (Math.log10(absFb0) + 1) );
+	this.fb0 = fb0;
 
 	outputs[0] = accel;
 	outputs[1] = rot;
