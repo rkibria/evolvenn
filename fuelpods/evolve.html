@@ -80,6 +80,7 @@ function Individual()
 	this.pilotNet = makePilotNet();
 	this.positions = [];
 	this.tmpV1 = new Vec2();
+	this.solved = false;
 }
 
 Individual.prototype.compareIndividuals = function(a, b)
@@ -135,6 +136,8 @@ Individual.prototype.evaluate = function()
 		this.positions = [];
 	}
 
+	this.solved = false;
+
 	// Set the start condition
 	const start = g_start_conditions[g_current_start_condition];
 	const rocket = g_model.rocket;
@@ -167,6 +170,8 @@ Individual.prototype.evaluate = function()
 	}
 
 	fitness[0] *= Math.sqrt(g_model.pods.length + 1);
+
+	this.solved = (g_model.pods.length == 0);
 
 	this.positions.push(positions);
 
@@ -236,7 +241,6 @@ g_best_solution = initBestSolution();
 let generation = 1;
 let evalRunning = false;
 let nEvaluated = 0;
-let numSolved = 0;
 window.onload = function()
 {
 	const canvas = document.getElementById('canvas');
@@ -262,7 +266,6 @@ window.onload = function()
 			}
 
 			nEvaluated = 0;
-			numSolved = 0;
 		}
 
 		const t0 = performance.now();
@@ -270,7 +273,6 @@ window.onload = function()
 		do {
 			nEvaluated += 1;
 			evalDone = g_population.evaluate();
-			numSolved += (g_model.pods.length == 0) ? 1 : 0;
 		} while(!evalDone && (performance.now() - t0) <= 100);
 
 		const endTime = new Date();
@@ -293,7 +295,7 @@ window.onload = function()
 			const currentBest = g_population.evolve(spread);
 			g_fitnessgraph.push( currentBest.fitnessToNumber() );
 
-			const progressStartConditions = (numSolved >= 1);
+			const progressStartConditions = currentBest.solved;
 			if(progressStartConditions) {
 				g_best_solution.generation = g_fitnessgraph.generation;
 				g_best_solution.solution.copy(currentBest);
