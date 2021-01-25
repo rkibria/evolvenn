@@ -92,7 +92,7 @@ WorldModel.prototype.run = function(accel, rot) {
 		const podPos = this.pods[i];
 		const dist = getVec2Distance(podPos, this.rocket.pos);
 		if(dist <= this.POD_COLLISION_DIST) {
-			this.rocket.fuel += this.rocket.REFUEL_PER_POD;
+			// this.rocket.fuel += this.rocket.REFUEL_PER_POD;
 			this.pods.splice(i , 1);
 			break;
 		}
