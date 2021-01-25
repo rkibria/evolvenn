@@ -171,6 +171,7 @@ Individual.prototype.evaluate = function()
 	fitness[0] *= g_model.pods.length + 1;
 
 	this.solves += (g_model.pods.length == 0) ? 1 : 0;
+	start.nSolved += (g_model.pods.length == 0) ? 1 : 0;
 
 	this.positions.push(positions);
 
@@ -200,7 +201,7 @@ function addStartCondition(generation = -1, doProgress = false)
 		const startPos = new Vec2().randomInUnitDisk().multiplyScalar( 50 );
 		const startDir = new Vec2().setLengthAngle(1, Math.random() * Math.PI * 2);
 		const startVel = new Vec2().randomInUnitDisk().multiplyScalar( 3 );
-		const newCnd = { pos: startPos, vel: startVel, dir: startDir, pods: [] };
+		const newCnd = { pos: startPos, vel: startVel, dir: startDir, pods: [], nSolved: 0 };
 		newCnd.pos.copy(startPos);
 		newCnd.vel.copy(startVel);
 		newCnd.dir.copy(startDir);
@@ -225,14 +226,37 @@ function addStartCondition(generation = -1, doProgress = false)
 		}
 	}
 
+	function cleanUpConditions() {
+		// remove too easy conditions that at least half the individuals could solve
+		const oldSize = g_start_conditions.length;
+		let i = 0;
+		// Also reset the counter
+		while(i < g_start_conditions.length) {
+			const cnd = g_start_conditions[i];
+			if(cnd.nSolved >= g_pop_size / 2) {
+				g_start_conditions.splice(i, 1);
+			}
+			else {
+				cnd.nSolved = 0;
+				i += 1;
+			}
+		}
+		const newSize = g_start_conditions.length;
+
+		for(let j = 0; j < oldSize - newSize; ++j) {
+			addCondition();
+		}
+	}
+
 	if(generation > 0) {
+		cleanUpConditions();
+
 		if(!runningGreatFilter) {
 			if(generation % greatFilterCycle == 0) {
 				runningGreatFilter = true;
 				preFilterSize = g_start_conditions.length;
-				g_start_conditions = [];
 				const newSize = Math.max(greatFilterSize, 2 * preFilterSize);
-				for(let i = 0; i < newSize; ++i) {
+				for(let i = 0; i < newSize - preFilterSize; ++i) {
 					addCondition();
 				}
 			}
@@ -241,16 +265,12 @@ function addStartCondition(generation = -1, doProgress = false)
 				if(doProgress) {
 					addCondition();
 					addCondition();
-					modifyConditions();
 				}
 			}
 		}
 		else {
 			runningGreatFilter = false;
-			g_start_conditions = [];
-			for(let i = 0; i < preFilterSize; ++i) {
-				addCondition();
-			}
+			g_start_conditions.splice(preFilterSize, g_start_conditions.length - preFilterSize);
 		}
 	}
 	else {
