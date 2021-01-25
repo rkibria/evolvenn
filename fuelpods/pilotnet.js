@@ -75,13 +75,13 @@ PilotNet.prototype.run = function( outputs, model ) {
 	const r2p = this._v1;
 	for(i = 0; i < model.pods.length; ++i) {
 		const podPos = model.pods[ i ];
-		const dist = getVec2Distance(podPos, model.rocket.pos);
 		r2p.copy(podPos).sub(model.rocket.pos);
 		const angle = Math.trunc( getVec2Angle(model.rocket.dir, r2p) / Math.PI * 180 );
 		if(angle >= -(fov/2) && angle <= (fov/2)) {
 			const section = Math.trunc( ( angle + (fov/2) ) / (fov / this.nRadarSections) );
-			const invDist = 1000 / ( dist );
-			this.inputs[ section ] += invDist;
+			// const dist = getVec2Distance(podPos, model.rocket.pos);
+			// const invDist = 1000 / ( dist );
+			this.inputs[ section ] += 1;
 		}
 	}
 
