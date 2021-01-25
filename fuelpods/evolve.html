@@ -168,7 +168,7 @@ Individual.prototype.evaluate = function()
 		}
 	}
 
-	fitness[0] *= Math.sqrt(g_model.pods.length + 1);
+	fitness[0] *= g_model.pods.length + 1;
 
 	this.solves += (g_model.pods.length == 0) ? 1 : 0;
 
@@ -190,34 +190,72 @@ function makePopulation() {
 
 let g_population = makePopulation();
 
-// adds 1 new, varies previous ones
-function addStartCondition()
+let runningGreatFilter = false;
+let preFilterSize = 0;
+const greatFilterCycle = 30;
+const greatFilterSize = 100;
+function addStartCondition(generation = -1, doProgress = false)
 {
-	const startPos = new Vec2().randomInUnitDisk().multiplyScalar( 50 );
-	const startDir = new Vec2().setLengthAngle(1, Math.random() * Math.PI * 2);
-	const startVel = new Vec2().randomInUnitDisk().multiplyScalar( 3 );
-	const newCnd = { pos: startPos, vel: startVel, dir: startDir, pods: [] };
-	newCnd.pos.copy(startPos);
-	newCnd.vel.copy(startVel);
-	newCnd.dir.copy(startDir);
-	newCnd.pods.push( new Vec2().randomInUnitDisk().normalize().multiplyScalar( 200 + Math.random() * 200 ) );
-	g_start_conditions.push( newCnd );
+	function addCondition() {
+		const startPos = new Vec2().randomInUnitDisk().multiplyScalar( 50 );
+		const startDir = new Vec2().setLengthAngle(1, Math.random() * Math.PI * 2);
+		const startVel = new Vec2().randomInUnitDisk().multiplyScalar( 3 );
+		const newCnd = { pos: startPos, vel: startVel, dir: startDir, pods: [] };
+		newCnd.pos.copy(startPos);
+		newCnd.vel.copy(startVel);
+		newCnd.dir.copy(startDir);
+		newCnd.pods.push( new Vec2().randomInUnitDisk().normalize().multiplyScalar( 200 + Math.random() * 200 ) );
+		g_start_conditions.push( newCnd );
+	}
 
-	for(let j = 0; j < g_start_conditions.length - 1; ++j) {
-		const cnd = g_start_conditions[j];
+	function modifyConditions() {
+		for(let j = 0; j < g_start_conditions.length - 1; ++j) {
+			const cnd = g_start_conditions[j];
 
-		cnd.pos.randomInUnitDisk().multiplyScalar( 50 );
-		cnd.vel.randomInUnitDisk().multiplyScalar( 3 );
-		cnd.dir.setLengthAngle(1, Math.random() * Math.PI * 2);
+			cnd.pos.randomInUnitDisk().multiplyScalar( 50 );
+			cnd.vel.randomInUnitDisk().multiplyScalar( 3 );
+			cnd.dir.setLengthAngle(1, Math.random() * Math.PI * 2);
 
-		for(let i = 0; i < cnd.pods.length; ++i) {
-			const v = cnd.pods[i];
-			v.addComponents(getRandomInt(-20, 20), getRandomInt(-20, 20));
-			v.set(Math.min(v.x, 400), Math.min(v.y, 400));
-			v.set(Math.max(v.x, -400), Math.max(v.y, -400));
+			for(let i = 0; i < cnd.pods.length; ++i) {
+				const v = cnd.pods[i];
+				v.addComponents(getRandomInt(-20, 20), getRandomInt(-20, 20));
+				v.set(Math.min(v.x, 400), Math.min(v.y, 400));
+				v.set(Math.max(v.x, -400), Math.max(v.y, -400));
+			}
 		}
 	}
 
+	if(generation > 0) {
+		if(!runningGreatFilter) {
+			if(generation % greatFilterCycle == 0) {
+				runningGreatFilter = true;
+				preFilterSize = g_start_conditions.length;
+				g_start_conditions = [];
+				const newSize = Math.max(greatFilterSize, 2 * preFilterSize);
+				for(let i = 0; i < newSize; ++i) {
+					addCondition();
+				}
+			}
+			else {
+				// normal operation
+				if(doProgress) {
+					addCondition();
+					addCondition();
+					modifyConditions();
+				}
+			}
+		}
+		else {
+			runningGreatFilter = false;
+			g_start_conditions = [];
+			for(let i = 0; i < preFilterSize; ++i) {
+				addCondition();
+			}
+		}
+	}
+	else {
+		addCondition();
+	}
 }
 
 addStartCondition();
@@ -290,7 +328,7 @@ window.onload = function()
 				const currentBest = g_population.evolve(spread);
 				g_fitnessgraph.push( currentBest.fitnessToNumber() );
 
-				const progressStartConditions = (currentBest.solves == g_start_conditions.length);
+				const progressStartConditions = (currentBest.solves >= g_start_conditions.length - 1);
 				if(progressStartConditions) {
 					g_best_solution.generation = g_fitnessgraph.generation;
 					g_best_solution.solution.copy(currentBest);
@@ -309,9 +347,7 @@ window.onload = function()
 					g_visualizer.drawPods( ctx2, g_start_conditions[i].pods, g_model.POD_SIZE );
 				}
 
-				if(progressStartConditions) {
-					addStartCondition();
-				}
+				addStartCondition(generation, progressStartConditions);
 			}
 		}
 
