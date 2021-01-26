@@ -102,12 +102,15 @@ setPause(g_paused);
 
 onRandomizePosButton();
 
+let counter = 0;
 window.onload = function() {
 	const ctx = canvas.getContext('2d');
 	ctx.fillStyle = "black";
 	ctx.fillRect(0, 0, canvasW, canvasH);
 
 	(function drawFrame () {
+		counter += 1;
+
 		window.requestAnimationFrame(drawFrame, canvas);
 		ctx.clearRect(0, 0, canvasW, canvasH);
 		// const t0 = performance.now();
@@ -115,6 +118,7 @@ window.onload = function() {
 		g_pilot.run(ctx, !g_paused);
 
 		if(g_pilot.visualizer.model.pods.length == 0) {
+			g_pilot.visualizer.drawExplosion(ctx, 5 + 5 * (Math.trunc(counter / 3) % 5));
 			setPause(true);
 		}
 
