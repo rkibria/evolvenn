@@ -59,7 +59,7 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null, rot=null) {
 
 	ctx.beginPath();
 	ctx.lineWidth = "2";
-	ctx.fillStyle = "cadetblue";
+	ctx.fillStyle = "lightblue";
 	ctx.moveTo( -10, 20 );
 	ctx.lineTo( -5, 15 );
 	ctx.lineTo( -5, -15 );
