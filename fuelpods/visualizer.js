@@ -83,18 +83,7 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null, rot=null) {
 	ctx.fill();
 	ctx.restore();
 
-	// Collision marker
-	/*
-	ctx.save()
-	ctx.strokeStyle = "darkgrey";
-	ctx.setLineDash([1, 15]);
-	ctx.beginPath();
-	ctx.arc(0, 0, this.model.ROCKET_SIZE, 0, 2 * Math.PI);
-	ctx.stroke();
-	ctx.restore();
-	*/
-
-	if( accel != null ) {
+	if( accel != null && this.model.rocket.fuel > 0 ) {
 		if(accel > 0) {
 			ctx.beginPath();
 			ctx.fillStyle = "orange";
@@ -271,15 +260,33 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 }
 
 Visualizer.prototype.drawPods = function( ctx, pods, podSize, scale = 1 ) {
-	ctx.save();
-	ctx.fillStyle = "darkgreen";
 	for(i = 0; i < pods.length; ++i) {
 		const podPos = pods[ i ];
+		const x = Math.trunc(this.center.x + podPos.x / scale);
+		const y = Math.trunc(this.center.y - podPos.y / scale);
+		const r = Math.trunc(podSize / scale);
+
+		ctx.save();
+		ctx.fillStyle = "black";
+		ctx.strokeStyle = "orange";
 		ctx.beginPath();
-		ctx.arc(this.center.x + podPos.x / scale, this.center.y - podPos.y / scale, podSize / scale, 0, 2 * Math.PI);
+		ctx.arc(x, y, r, 0, 2 * Math.PI);
+		ctx.stroke();
+
+		ctx.fillStyle = "orange";
+		ctx.beginPath();
+		ctx.moveTo(x, y);
+		ctx.arc(x, y, r, 0, Math.PI / 2, false);
 		ctx.fill();
+		ctx.restore();
+
+		ctx.fillStyle = "orange";
+		ctx.beginPath();
+		ctx.moveTo(x, y);
+		ctx.arc(x, y, r, Math.PI, Math.PI / 2 * 3, false);
+		ctx.fill();
+		ctx.restore();
 	}
-	ctx.restore();
 }
 
 // positions is an array of [x,y] arrays
