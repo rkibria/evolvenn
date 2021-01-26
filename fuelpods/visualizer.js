@@ -40,6 +40,19 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null, rot=null) {
 	ctx.closePath();
 	ctx.fill();
 
+	// fov marker
+	const fov = 120;
+	const viewDist = 1000;
+	ctx.save();
+	ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+	ctx.moveTo( 0, 0 );
+	const dx = viewDist * Math.tan((fov/2) * Math.PI / 180);
+	ctx.lineTo( -dx, -viewDist );
+	ctx.lineTo( dx, -viewDist );
+	ctx.closePath();
+	ctx.fill();
+	ctx.restore();
+
 	// Collision marker
 	/*
 	ctx.save()
@@ -57,7 +70,7 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null, rot=null) {
 			ctx.fillStyle = "orange";
 			ctx.moveTo( 0, 20 );
 			ctx.lineTo( 3, 23 );
-			ctx.lineTo( 0, 30 + this._rocketFrame * 2 + Math.min( accel, 5 ) * 15 );
+			ctx.lineTo( 0, 30 + this._rocketFrame * 2 + ( accel / 0.1 ) * 15 );
 			ctx.lineTo( -3, 23 );
 			ctx.closePath();
 			ctx.fill();
