@@ -249,7 +249,7 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 
 		// Rocket center mass
 		ctx.save();
-		ctx.fillStyle = "red";
+		ctx.fillStyle = "darkblue";
 		ctx.beginPath();
 		ctx.arc(x, y, r, 0, (Math.PI * 2), true);
 		ctx.closePath();
