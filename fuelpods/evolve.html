@@ -149,13 +149,16 @@ Individual.prototype.evaluate = function()
 	}
 
 	const positions = [];
+	let tick = 0;
 	while( rocket.fuel > 0 ) {
 		this.pilotNet.run( g_net_outputs, g_model );
 		const accel = g_net_outputs[0];
 		const rot = g_net_outputs[1];
 		g_model.run( accel, rot );
 
-		positions.push([rocket.pos.x, rocket.pos.y]);
+		if(tick % 60 == 0) {
+			positions.push([rocket.pos.x, rocket.pos.y]);
+		}
 
 		for(i = 0; i < g_model.pods.length; ++i) {
 			const podPos = g_model.pods[i];
@@ -166,7 +169,10 @@ Individual.prototype.evaluate = function()
 		if(g_model.pods.length == 0) {
 			break;
 		}
+
+		tick += 1;
 	}
+	positions.push([rocket.pos.x, rocket.pos.y]);
 
 	fitness[0] *= g_model.pods.length + 1;
 
