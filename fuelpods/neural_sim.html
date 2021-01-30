@@ -123,9 +123,18 @@ window.onload = function() {
 		ctx.textAlign = "left";
 		ctx.strokeStyle = 'white';
 		ctx.fillStyle = 'white';
+		let ty = 25;
 		for(let i = 0; i < pilotNet.inputs.length; ++i) {
 			const txt = "in[" + i + "] " + pilotNet.inputs[i];
-			ctx.fillText(txt, 20, 25 + i * 10);
+			ctx.fillText(txt, 20, ty);
+			ty += 10;
+		}
+		ty = 25;
+		const outVals = pilotNet.nnet._layers[pilotNet.nnet._layers.length - 1].outputs;
+		for(let i = 0; i < outVals.length; ++i) {
+			const txt = "out[" + i + "] " + outVals[i];
+			ctx.fillText(txt, 200, ty);
+			ty += 10;
 		}
 		ctx.restore();
 
