@@ -107,14 +107,19 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 	const accelBit0 = (outputScale(nnOutputs[0]) > bitThreshold);
 	const accelBit1 = (outputScale(nnOutputs[1]) > bitThreshold);
-	const accelMulti = (accelBit0 ? 1 : 0) + (accelBit1 ? 2 : 0); // 0-3
-	const accel = (this.MAX_ACCEL / 3) * accelMulti;
+	// bit1 bit0 thrust
+	// 0    0    0
+	// 0    1    1
+	// 1    0    1
+	// 1    1    2
+	const accelMulti = (accelBit0 ? 1 : 0) + (accelBit1 ? 1 : 0); // 0-2
+	const accel = (this.MAX_ACCEL / 2) * accelMulti;
 
 	const rotPolarityBit = (outputScale(nnOutputs[2]) > bitThreshold);
 	const rotBit0 = (outputScale(nnOutputs[3]) > bitThreshold);
 	const rotBit1 = (outputScale(nnOutputs[4]) > bitThreshold);
-	const rotMulti = (rotBit0 ? 1 : 0) + (rotBit1 ? 2 : 0); // 0-3
-	let rot = (rotPolarityBit ? 1 : -1) * (0.1 / 3) * rotMulti;
+	const rotMulti = (rotBit0 ? 1 : 0) + (rotBit1 ? 1 : 0); // 0-2
+	let rot = (rotPolarityBit ? 1 : -1) * (0.1 / 2) * rotMulti;
 	if(rot > 0 && model.rocket.avl >= model.rocket.MAX_AVL) {
 		rot = 0;
 	}

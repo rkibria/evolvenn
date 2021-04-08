@@ -247,6 +247,50 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 
 		this.drawRocket( ctx, x, y, accel, rot );
 
+		function nearestCircleLineIntersect(P, D, C, r) {
+		  function sq(i) {
+			return i * i;
+		  }
+		  const a = sq(D.x) + sq(D.y);
+		  const b = (2 * D.x * P.x - 2 * C.x * D.x) + (2 * D.y * P.y - 2 * C.y * D.y);
+		  const c = (sq(P.x) - 2 * C.x * P.x + sq(C.x)) + (sq(P.y) - 2 * C.y * P.y + sq(C.y)) - sq(r);
+		  const discriminant = sq(b) - 4 * a * c;
+		  if(discriminant == 0) {
+			return -b / (2 * a);
+		  }
+		  else if (discriminant > 0) {
+			return (-b - Math.sqrt( discriminant )) / (2 * a);
+		  }
+		  return -1;
+		}
+
+		// 6 eye beams: -40, -20, 0, 20, 40
+		if(this.model.pods.length > 0) {
+			ctx.save();
+		  for(let i=0; i < 1; ++i) {
+			this._v1.set(this.model.rocket.dir.x, -this.model.rocket.dir.y).rotate( Math.PI/180 * (0 + 20 * i) ).multiplyScalar(1000).addComponents(x, y);
+			ctx.beginPath();
+			ctx.lineWidth = "1";
+			ctx.strokeStyle = "gray";
+			ctx.moveTo( x, y );
+			ctx.lineTo( this._v1.x, this._v1.y );
+				ctx.closePath();
+				ctx.stroke();
+			const t = nearestCircleLineIntersect(this.model.rocket.pos, this.model.rocket.dir, this.model.pods[0], this.model.POD_SIZE);
+			if(t >= 0) {
+			  this._v1.copy(this.model.rocket.pos).addScaledVector(this.model.rocket.dir, t);
+				ctx.save();
+				ctx.fillStyle = "red";
+				ctx.beginPath();
+				ctx.arc(this.center.x + this._v1.x, this.center.y - this._v1.y, 5, 0, (Math.PI * 2), true);
+				ctx.closePath();
+				ctx.fill();
+				ctx.restore();
+			}
+		  }
+			ctx.restore();
+		}
+
 		// Rocket center mass
 		ctx.save();
 		ctx.fillStyle = "darkblue";
