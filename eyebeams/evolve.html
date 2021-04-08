@@ -1,0 +1,387 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Pilot network evolution</title>
+<style>
+body {background-color: black;}
+
+html *
+{
+	font-size: 1em;
+	color: lightgray;
+	font-family: Arial;
+}
+
+.float-left-child {
+	float: left;
+}
+
+/* base css */
+body {
+	padding: 0px;
+}
+.parent {
+	padding: 0px
+}
+.child {
+	padding: 5px
+}
+</style>
+</head>
+<body>
+
+<script src="../drawing.js"></script>
+<script src="../vec2.js"></script>
+<script src="../random.js"></script>
+<script src="../neurallayer.js"></script>
+<script src="../neuralnet.js"></script>
+<script src="../fitnessgraph.js"></script>
+<script src="../population.js"></script>
+<script src="worldmodel.js"></script>
+<script src="visualizer.js"></script>
+<script src="pilotnet.js"></script>
+<script src="neuralpilot.js"></script>
+
+<canvas id="canvas" width="1024" height="100"></canvas>
+<div id="STATUS_TEXT"></div>
+<canvas id="canvas2" width="800" height="800" style="border:0px;">Your browser does not support the HTML5 canvas tag.</canvas>
+<div id="BEST_SOLUTION"></div>
+<textarea id="BEST_SOLUTION_OUT" rows="3" cols="120">
+NN definition
+</textarea>
+
+<script>
+
+var CSS_COLOR_NAMES = ["White", "Red", "Green", "Blue", "Violet", "Yellow", "Pink", "Orange"];
+
+const g_start_time = new Date();
+
+const g_pop_size = 1000;
+const g_mutation_spread = 25;
+const g_mutation_halflife = 100;
+
+// Evaluate nets for all of these start positions, velocities etc.
+let g_start_conditions = [];
+let g_current_start_condition = 0;
+
+// Re-use these for every individual
+const g_net_outputs = [0, 0];
+const g_model = new WorldModel();
+
+function makeFitness()
+{
+	return [0];
+}
+
+function Individual()
+{
+	this.fitness = makeFitness();
+	this.pilotNet = makePilotNet();
+	this.positions = [];
+	this.tmpV1 = new Vec2();
+	this.solves = 0;
+}
+
+Individual.prototype.compareIndividuals = function(a, b)
+{
+	for(let i = 0; i < a.fitness.length; ++i) {
+		if(a.fitness[i] == b.fitness[i])
+			continue;
+		return a.fitness[i] - b.fitness[i];
+	}
+	return 0;
+}
+
+Individual.prototype.clearFitness = function()
+{
+	for(let i = 0; i < this.fitness.length; ++i) {
+		this.fitness[i] = 0;
+	}
+	this.solves = 0;
+}
+
+Individual.prototype.fitnessToNumber = function()
+{
+	let sum = 0;
+	for(let i = 0; i < this.fitness.length; ++i) {
+		sum += this.fitness[i];
+	}
+	return sum;
+}
+
+Individual.prototype.mutate = function(spread)
+{
+	this.pilotNet.mutate(spread);
+}
+
+Individual.prototype.randomize = function()
+{
+	this.pilotNet.randomize();
+}
+
+Individual.prototype.copy = function(other)
+{
+	for(let i = 0; i < this.fitness.length; ++i) {
+		this.fitness[i] = other.fitness[i];
+	}
+
+	this.pilotNet.copy(other.pilotNet);
+}
+
+Individual.prototype.evaluate = function()
+{
+	let fitness = makeFitness();
+
+	if(g_current_start_condition == 0) {
+		this.positions = [];
+	}
+
+	// Set the start condition
+	const start = g_start_conditions[g_current_start_condition];
+	const rocket = g_model.rocket;
+	rocket.reset( start.pos, start.vel, start.dir );
+	// Create the fuel pods
+	g_model.pods = []
+	for(let i = 0; i < start.pods.length; ++i) {
+		const v = start.pods[ i ];
+		g_model.pods.push( new Vec2(v.x, v.y) );
+	}
+
+	const positions = [];
+	let tick = 0;
+	while( rocket.fuel > 0 ) {
+		this.pilotNet.run( g_net_outputs, g_model );
+		const accel = g_net_outputs[0];
+		const rot = g_net_outputs[1];
+		g_model.run( accel, rot );
+
+		if(tick % 60 == 0) {
+			positions.push([rocket.pos.x, rocket.pos.y]);
+		}
+
+		for(i = 0; i < g_model.pods.length; ++i) {
+			const podPos = g_model.pods[i];
+			const dist = getVec2Distance(podPos, rocket.pos);
+			fitness[0] += dist;
+		}
+
+		if(g_model.pods.length == 0) {
+			break;
+		}
+
+		tick += 1;
+	}
+	positions.push([rocket.pos.x, rocket.pos.y]);
+
+	fitness[0] *= g_model.pods.length + 1;
+
+	this.solves += (g_model.pods.length == 0) ? 1 : 0;
+	start.nSolved += (g_model.pods.length == 0) ? 1 : 0;
+
+	this.positions.push(positions);
+
+	for(let i = 0; i < this.fitness.length; ++i) {
+		this.fitness[i] += fitness[i];
+	}
+}
+
+///////////////////////////////////////////////////////////
+const g_fitnessgraph = new FitnessGraph( 0, 0, canvas.width, 100 );
+
+g_visualizer = new Visualizer( null, 10, 10, 780 );
+
+function makePopulation() {
+	return new Population(g_pop_size, function() {return new Individual()});
+}
+
+let g_population = makePopulation();
+
+let runningGreatFilter = false;
+let preFilterSize = 0;
+const greatFilterCycle = 30;
+const greatFilterSize = 100;
+function addStartCondition(generation = -1, doProgress = false)
+{
+	function addCondition() {
+		const startPos = new Vec2().randomInUnitDisk().multiplyScalar( 50 );
+		const startDir = new Vec2().setLengthAngle(1, Math.random() * Math.PI * 2);
+		const startVel = new Vec2().randomInUnitDisk().multiplyScalar( 3 );
+		const newCnd = { pos: startPos, vel: startVel, dir: startDir, pods: [], nSolved: 0 };
+		newCnd.pos.copy(startPos);
+		newCnd.vel.copy(startVel);
+		newCnd.dir.copy(startDir);
+		newCnd.pods.push( new Vec2().randomInUnitDisk().normalize().multiplyScalar( 200 + Math.random() * 200 ) );
+		g_start_conditions.push( newCnd );
+	}
+
+	function modifyConditions() {
+		for(let j = 0; j < g_start_conditions.length - 1; ++j) {
+			const cnd = g_start_conditions[j];
+
+			cnd.pos.randomInUnitDisk().multiplyScalar( 50 );
+			cnd.vel.randomInUnitDisk().multiplyScalar( 3 );
+			cnd.dir.setLengthAngle(1, Math.random() * Math.PI * 2);
+
+			for(let i = 0; i < cnd.pods.length; ++i) {
+				const v = cnd.pods[i];
+				v.addComponents(getRandomInt(-20, 20), getRandomInt(-20, 20));
+				v.set(Math.min(v.x, 400), Math.min(v.y, 400));
+				v.set(Math.max(v.x, -400), Math.max(v.y, -400));
+			}
+		}
+	}
+
+	function cleanUpConditions() {
+		// remove too easy conditions that at least half the individuals could solve
+		const oldSize = g_start_conditions.length;
+		let i = 0;
+		// Also reset the counter
+		while(i < g_start_conditions.length) {
+			const cnd = g_start_conditions[i];
+			if(cnd.nSolved >= g_pop_size / 2) {
+				g_start_conditions.splice(i, 1);
+			}
+			else {
+				cnd.nSolved = 0;
+				i += 1;
+			}
+		}
+		const newSize = g_start_conditions.length;
+
+		for(let j = 0; j < oldSize - newSize; ++j) {
+			addCondition();
+		}
+	}
+
+	if(generation > 0) {
+		cleanUpConditions();
+
+		if(!runningGreatFilter) {
+			if(generation % greatFilterCycle == 0) {
+				runningGreatFilter = true;
+				preFilterSize = g_start_conditions.length;
+				const newSize = Math.max(greatFilterSize, 2 * preFilterSize);
+				for(let i = 0; i < newSize - preFilterSize; ++i) {
+					addCondition();
+				}
+			}
+			else {
+				// normal operation
+				if(doProgress) {
+					addCondition();
+					addCondition();
+				}
+			}
+		}
+		else {
+			runningGreatFilter = false;
+			g_start_conditions.splice(preFilterSize, g_start_conditions.length - preFilterSize);
+		}
+	}
+	else {
+		addCondition();
+	}
+}
+
+addStartCondition();
+
+function initBestSolution() {
+	return { generation: 0, solution: new Individual() };
+}
+g_best_solution = initBestSolution();
+
+let generation = 1;
+let evalRunning = false;
+let nEvaluated = 0;
+window.onload = function()
+{
+	const canvas = document.getElementById('canvas');
+	const ctx = canvas.getContext('2d');
+	const canvas2 = document.getElementById('canvas2');
+	const ctx2 = canvas2.getContext('2d');
+
+	(function drawFrame () {
+		window.requestAnimationFrame( drawFrame, canvas );
+		ctx.clearRect( 0, 0, canvas.width, canvas.height );
+
+		if(!evalRunning) {
+			evalRunning = true;
+
+			if(g_current_start_condition == 0) {
+				g_population.clearFitnesses();
+			}
+
+			g_model.pods = [];
+			const srcPods = g_start_conditions[g_current_start_condition].pods;
+			for(i = 0; i < srcPods.length; ++i) {
+				g_model.pods.push( new Vec2( srcPods[i].x, srcPods[i].y ) );
+			}
+
+			nEvaluated = 0;
+		}
+
+		const t0 = performance.now();
+		let evalDone = false;
+		do {
+			nEvaluated += 1;
+			evalDone = g_population.evaluate();
+		} while(!evalDone && (performance.now() - t0) <= 100);
+
+		const endTime = new Date();
+		const secondsElapsed = Math.trunc((endTime - g_start_time) / 1000);
+		let statusText = "Evaluated: " + nEvaluated;
+		statusText += " | Population size: " + g_pop_size;
+		statusText += " | Time: " + Math.trunc(secondsElapsed / 60) + " min " + Math.trunc(secondsElapsed % 60) + " s";
+		statusText += " | Evaluating start condition " + (g_current_start_condition + 1) + " / " + g_start_conditions.length;
+		document.getElementById("STATUS_TEXT").innerHTML = statusText;
+
+		if(evalDone) {
+			evalRunning = false;
+
+			if(g_current_start_condition < g_start_conditions.length - 1) {
+				g_current_start_condition += 1;
+			}
+			else {
+				g_current_start_condition = 0;
+
+				const halflife_factor = (g_mutation_halflife > 0)
+					? Math.pow(2, -(generation % 1000) / g_mutation_halflife) : 1;
+				const spread = Math.max(g_mutation_spread * halflife_factor, g_mutation_spread * 0.01);
+
+				generation += 1;
+
+				const currentBest = g_population.evolve(spread);
+				g_fitnessgraph.push( currentBest.fitnessToNumber() );
+
+				const progressStartConditions = (currentBest.solves >= g_start_conditions.length - 1);
+				if(progressStartConditions) {
+					g_best_solution.generation = g_fitnessgraph.generation;
+					g_best_solution.solution.copy(currentBest);
+				}
+				document.getElementById("BEST_SOLUTION").innerHTML = "Solution fitness '"
+					+ g_best_solution.solution.fitness.toString() + "' at generation " + g_best_solution.generation;
+				document.getElementById("BEST_SOLUTION_OUT").innerHTML = g_best_solution.solution.pilotNet.toText();
+
+				ctx2.clearRect( 0, 0, canvas2.width, canvas2.height );
+				g_visualizer.draw( ctx2 );
+				for(let i = 0; i < currentBest.positions.length; ++i) {
+					g_visualizer.drawPath( ctx2, currentBest.positions[i], CSS_COLOR_NAMES[i % CSS_COLOR_NAMES.length] );
+				}
+
+				for(let i = 0; i < g_start_conditions.length; ++i) {
+					g_visualizer.drawPods( ctx2, g_start_conditions[i].pods, g_model.POD_SIZE );
+				}
+
+				addStartCondition(generation, progressStartConditions);
+			}
+		}
+
+		g_fitnessgraph.draw( ctx );
+
+	}());
+}
+
+</script>
+</body>
+</html>
