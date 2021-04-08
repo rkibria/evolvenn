@@ -70,19 +70,6 @@ Visualizer.prototype.drawRocket = function(ctx, x, y, accel=null, rot=null) {
 	ctx.closePath();
 	ctx.fill();
 
-	// fov marker
-	const fov = 120;
-	const viewDist = 1000;
-	ctx.save();
-	ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
-	ctx.moveTo( 0, 0 );
-	const dx = viewDist * Math.tan((fov/2) * Math.PI / 180);
-	ctx.lineTo( -dx, -viewDist );
-	ctx.lineTo( dx, -viewDist );
-	ctx.closePath();
-	ctx.fill();
-	ctx.restore();
-
 	if( accel != null && this.model.rocket.fuel > 0 ) {
 		if(accel > 0) {
 			ctx.beginPath();
@@ -216,19 +203,6 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 		// Pods
 		this.drawPods( ctx, this.model.pods, this.model.POD_SIZE, scale );
 
-		// Eyebeams
-		/*
-		for(i = 0; i < this.model.pods.length; ++i) {
-			const podPos = this.model.pods[ i ];
-			const dist = getVec2Distance(podPos, this.model.rocket.pos);
-			const r2p = this._v1;
-			r2p.copy(podPos).sub(this.model.rocket.pos);
-			const angle = getVec2Angle(this.model.rocket.dir, r2p) / Math.PI * 180;
-			drawLabel(ctx, "d: " + dist.toFixed(0), this.center.x + podPos.x / scale, this.center.y - podPos.y / scale);
-			drawLabel(ctx, "a: " + angle.toFixed(0), this.center.x + podPos.x / scale, this.center.y - podPos.y / scale + 20);
-		}
-		*/
-
 		drawLabel(ctx, "scale 1:" + scale.toString(),
 			this.center.x, lowerEdge - 1 * lineHeight, "center");
 		if(scale > 1) {
@@ -247,30 +221,31 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 
 		this.drawRocket( ctx, x, y, accel, rot );
 
-		// 6 eye beams: -40, -20, 0, 20, 40
+		// 5 eye beams: -40, -20, 0, 20, 40
 		if(this.model.pods.length > 0) {
+			const beamLen = 1000;
 			ctx.save();
-		  for(let i=0; i < 1; ++i) {
-			this._v1.set(this.model.rocket.dir.x, -this.model.rocket.dir.y).rotate( Math.PI/180 * (0 + 20 * i) ).multiplyScalar(1000).addComponents(x, y);
-			ctx.beginPath();
-			ctx.lineWidth = "1";
-			ctx.strokeStyle = "gray";
-			ctx.moveTo( x, y );
-			ctx.lineTo( this._v1.x, this._v1.y );
+			for(let i=0; i < 5; ++i) {
+				this._v1.copy(this.model.rocket.dir).rotate( Math.PI/180 * (-40 + 20 * i) );
+				ctx.beginPath();
+				ctx.lineWidth = "1";
+				ctx.strokeStyle = "gray";
+				ctx.moveTo( x, y );
+				ctx.lineTo( this._v1.x * beamLen + x, y - this._v1.y * beamLen );
 				ctx.closePath();
 				ctx.stroke();
-			const t = nearestCircleLineIntersect(this.model.rocket.pos, this.model.rocket.dir, this.model.pods[0], this.model.POD_SIZE);
-			if(t >= 0) {
-			  this._v1.copy(this.model.rocket.pos).addScaledVector(this.model.rocket.dir, t);
-				ctx.save();
-				ctx.fillStyle = "red";
-				ctx.beginPath();
-				ctx.arc(this.center.x + this._v1.x, this.center.y - this._v1.y, 5, 0, (Math.PI * 2), true);
-				ctx.closePath();
-				ctx.fill();
-				ctx.restore();
+				const t = nearestCircleLineIntersect(this.model.rocket.pos, this._v1, this.model.pods[0], this.model.POD_SIZE);
+				if(t >= 0) {
+					this._v1.multiplyScalar(t).add(this.model.rocket.pos);
+					ctx.save();
+					ctx.fillStyle = "red";
+					ctx.beginPath();
+					ctx.arc(this.center.x + this._v1.x, this.center.y - this._v1.y, 3, 0, (Math.PI * 2), true);
+					ctx.closePath();
+					ctx.fill();
+					ctx.restore();
+				}
 			}
-		  }
 			ctx.restore();
 		}
 
