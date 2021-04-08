@@ -226,7 +226,8 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 			function drawBeam(dirVec, beamLen) {
 				ctx.beginPath();
 				ctx.lineWidth = "1";
-				ctx.strokeStyle = "gray";
+				ctx.strokeStyle = "darkred";
+				ctx.setLineDash([1, 1]);
 				ctx.moveTo( x, y );
 				ctx.lineTo( dirVec.x * beamLen + x, y - dirVec.y * beamLen );
 				ctx.closePath();
