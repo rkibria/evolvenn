@@ -223,19 +223,21 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 
 		// 5 eye beams: -40, -20, 0, 20, 40
 		if(this.model.pods.length > 0) {
-			const beamLen = 1000;
-			ctx.save();
-			for(let i=0; i < 5; ++i) {
-				this._v1.copy(this.model.rocket.dir).rotate( Math.PI/180 * (-40 + 20 * i) );
+			function drawBeam(dirVec, beamLen) {
 				ctx.beginPath();
 				ctx.lineWidth = "1";
 				ctx.strokeStyle = "gray";
 				ctx.moveTo( x, y );
-				ctx.lineTo( this._v1.x * beamLen + x, y - this._v1.y * beamLen );
+				ctx.lineTo( dirVec.x * beamLen + x, y - dirVec.y * beamLen );
 				ctx.closePath();
 				ctx.stroke();
+			}
+			ctx.save();
+			for(let i=0; i < 5; ++i) {
+				this._v1.copy(this.model.rocket.dir).rotate( Math.PI/180 * (-40 + 20 * i) );
 				const t = nearestCircleLineIntersect(this.model.rocket.pos, this._v1, this.model.pods[0], this.model.POD_SIZE);
 				if(t >= 0) {
+					drawBeam(this._v1, t);
 					this._v1.multiplyScalar(t).add(this.model.rocket.pos);
 					ctx.save();
 					ctx.fillStyle = "red";
@@ -244,6 +246,9 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 					ctx.closePath();
 					ctx.fill();
 					ctx.restore();
+				}
+				else {
+					drawBeam(this._v1, 1000);
 				}
 			}
 			ctx.restore();
