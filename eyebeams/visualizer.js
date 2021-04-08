@@ -247,23 +247,6 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 
 		this.drawRocket( ctx, x, y, accel, rot );
 
-		function nearestCircleLineIntersect(P, D, C, r) {
-		  function sq(i) {
-			return i * i;
-		  }
-		  const a = sq(D.x) + sq(D.y);
-		  const b = (2 * D.x * P.x - 2 * C.x * D.x) + (2 * D.y * P.y - 2 * C.y * D.y);
-		  const c = (sq(P.x) - 2 * C.x * P.x + sq(C.x)) + (sq(P.y) - 2 * C.y * P.y + sq(C.y)) - sq(r);
-		  const discriminant = sq(b) - 4 * a * c;
-		  if(discriminant == 0) {
-			return -b / (2 * a);
-		  }
-		  else if (discriminant > 0) {
-			return (-b - Math.sqrt( discriminant )) / (2 * a);
-		  }
-		  return -1;
-		}
-
 		// 6 eye beams: -40, -20, 0, 20, 40
 		if(this.model.pods.length > 0) {
 			ctx.save();
