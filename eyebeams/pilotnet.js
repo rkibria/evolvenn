@@ -6,17 +6,15 @@
 @param innerLayers Array of neuron counts for each hidden layer (without the output layer)
 */
 function PilotNet( innerLayers ) {
-	this.nRadarSections = 6; // field of vision: 360 degrees, divided in x sections
+	this.nEyeBeams = 5;
 	// 2: velocity
 	// 2: direction
 	// 1: avl from model
 	// 1: fuel from model
-	// 1: feedback input 0
-	this.nInputs = this.nRadarSections + 7;
+	this.nInputs = this.nEyeBeams + 6;
 	// 2: accelBit0 & accelBit1 of accel
 	// 3: polarity, accelBit0 & accelBit1 of rot
-	// 1: feedback output 0
-	const nOutputs = 6;
+	const nOutputs = 5;
 
 	this.inputs = new Array( this.nInputs ).fill( 0 );
 
@@ -26,9 +24,13 @@ function PilotNet( innerLayers ) {
 
 	this.MAX_ACCEL = 0.1;
 
-	this.fb0 = 0;
-
 	this._v1 = new Vec2();
+
+	this.fov = 5;
+	this.beams = [];
+	for(i = 0; i < this.nEyeBeams; ++i) {
+		this.beams.push( { dir: new Vec2(), t: 0 } );
+	}
 }
 
 function makePilotNet() {
@@ -38,7 +40,6 @@ function makePilotNet() {
 PilotNet.prototype.copy = function(other) {
 	console.assert(this.inputs.length == other.inputs.length);
 	this.nnet.copy(other.nnet);
-	this.fb0 = 0;
 }
 
 PilotNet.prototype.randomize = function() {
@@ -66,36 +67,36 @@ PilotNet.prototype.fromText = function(text) {
 @param model
 */
 PilotNet.prototype.run = function( outputs, model ) {
-	for(i = 0; i < this.nRadarSections; ++i) {
+	for(i = 0; i < this.nEyeBeams; ++i) {
 		this.inputs[ i ] = 0;
 	}
 
-	// Closer pods lead to higher values (inverse of distance), choose the highest for each section (i.e. closest)
-	const fov = 120;
-	const r2p = this._v1;
-	for(i = 0; i < model.pods.length; ++i) {
-		const podPos = model.pods[ i ];
-		r2p.copy(podPos).sub(model.rocket.pos);
-		const angle = Math.trunc( getVec2Angle(model.rocket.dir, r2p) / Math.PI * 180 );
-		if(angle >= -(fov/2) && angle <= (fov/2)) {
-			const section = Math.trunc( ( angle + (fov/2) ) / (fov / this.nRadarSections) );
-			const dist = getVec2Distance(podPos, model.rocket.pos);
-			const invDist = 10 * Math.max(0.1, 1 - dist / 1000);
-			this.inputs[ section ] += invDist;
+	const startAngle = -this.fov / 2;
+	const incAngle = this.fov / (this.nEyeBeams - 1);
+
+	for( j = 0; j < model.pods.length; ++j ) {
+		const podPos = model.pods[ j ];
+
+		for( let i = 0; i < this.nEyeBeams; ++i ) {
+			const beam = this.beams[ i ];
+			beam.dir.copy(model.rocket.dir).rotate( Math.PI/180 * (startAngle + incAngle * i) );
+			beam.t = nearestCircleLineIntersect(model.rocket.pos, beam.dir, podPos, model.POD_SIZE);
+			if(beam.t >= 0) {
+				const invDist = 10 * Math.max(0.1, 1 - beam.t / 1000);
+				this.inputs[ i ] += invDist;
+			}
 		}
 	}
 
-	this.inputs[ this.nRadarSections ] = model.rocket.vel.x;
-	this.inputs[ this.nRadarSections + 1 ] = model.rocket.vel.y;
+	this.inputs[ this.nEyeBeams ] = model.rocket.vel.x;
+	this.inputs[ this.nEyeBeams + 1 ] = model.rocket.vel.y;
 
-	this.inputs[ this.nRadarSections + 2 ] = model.rocket.dir.x;
-	this.inputs[ this.nRadarSections + 3 ] = model.rocket.dir.y;
+	this.inputs[ this.nEyeBeams + 2 ] = model.rocket.dir.x;
+	this.inputs[ this.nEyeBeams + 3 ] = model.rocket.dir.y;
 
-	this.inputs[ this.nRadarSections + 4 ] = model.rocket.avl;
+	this.inputs[ this.nEyeBeams + 4 ] = model.rocket.avl;
 
-	this.inputs[ this.nRadarSections + 5 ] = model.rocket.fuel / 100;
-
-	this.inputs[ this.nRadarSections + 6 ] = this.fb0;
+	this.inputs[ this.nEyeBeams + 5 ] = model.rocket.fuel / 100;
 
 	const nnOutputs = this.nnet.run( this.inputs );
 
@@ -126,11 +127,6 @@ PilotNet.prototype.run = function( outputs, model ) {
 	else if(rot < 0 && model.rocket.avl <= -model.rocket.MAX_AVL) {
 		rot = 0;
 	}
-
-	let fb0 = nnOutputs[5];
-	const absFb0 = Math.abs(fb0);
-	fb0 = ((fb0 < 0) ? -1 : 1) * (absFb0 < 1 ? absFb0 : (Math.log10(absFb0) + 1) );
-	this.fb0 = fb0;
 
 	outputs[0] = accel;
 	outputs[1] = rot;

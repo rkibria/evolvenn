@@ -96,7 +96,7 @@ const mouseclick = captureMouseclick(canvas);
 const pilotNet = makePilotNet();
 pilotNet.randomize();
 document.getElementById("ID_NET_SETUP").value = pilotNet.toText();
-const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), 10, 10, 780 ), pilotNet );
+const g_pilot = new NeuralPilot( new Visualizer( new WorldModel(), pilotNet, 10, 10, 780 ), pilotNet );
 onLoadNetworkButton();
 
 let g_paused = false;

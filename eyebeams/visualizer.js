@@ -36,8 +36,9 @@ function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
 }
 
 // x,y = top left, s = edge length of square display
-function Visualizer(model, x, y, s) {
+function Visualizer(model, pilotNet, x, y, s) {
 	this.model = model;
+	this.pilotNet = pilotNet;
 	this.x = x;
 	this.y = y;
 	this.s = s;
@@ -234,12 +235,11 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 				ctx.stroke();
 			}
 			ctx.save();
-			for(let i=0; i < 5; ++i) {
-				this._v1.copy(this.model.rocket.dir).rotate( Math.PI/180 * (-40 + 20 * i) );
-				const t = nearestCircleLineIntersect(this.model.rocket.pos, this._v1, this.model.pods[0], this.model.POD_SIZE);
-				if(t >= 0) {
-					drawBeam(this._v1, t);
-					this._v1.multiplyScalar(t).add(this.model.rocket.pos);
+			for(let i = 0; i < this.pilotNet.nEyeBeams; ++i) {
+				const beam = this.pilotNet.beams[ i ];
+				if(beam.t >= 0) {
+					drawBeam(beam.dir, beam.t);
+					this._v1.copy(beam.dir).multiplyScalar(beam.t).add(this.model.rocket.pos);
 					ctx.save();
 					ctx.fillStyle = "red";
 					ctx.beginPath();
@@ -249,7 +249,7 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 					ctx.restore();
 				}
 				else {
-					drawBeam(this._v1, 1000);
+					drawBeam(beam.dir, 1000);
 				}
 			}
 			ctx.restore();
