@@ -147,5 +147,5 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 	// FOV
 	const fovBit = (outputScale(nnOutputs[5]) > bitThreshold);
-	this.fov = fovBit ? 5 : 10;
+	this.fov = fovBit ? 30 : 5;
 }
