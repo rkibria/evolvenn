@@ -32,6 +32,8 @@ function PilotNet( innerLayers ) {
 	for(i = 0; i < this.nEyeBeams; ++i) {
 		this.beams.push( { dir: new Vec2(), t: 0 } );
 	}
+
+	this.evoParams = [ 0 ]; // fov scale
 }
 
 function makePilotNet() {
@@ -41,6 +43,10 @@ function makePilotNet() {
 PilotNet.prototype.copy = function(other) {
 	console.assert(this.inputs.length == other.inputs.length);
 	this.nnet.copy(other.nnet);
+
+	for(let i = 0; i < this.evoParams.length; ++i) {
+		this.evoParams[i] = other.evoParams[i];
+	}
 }
 
 PilotNet.prototype.randomize = function() {
@@ -49,11 +55,16 @@ PilotNet.prototype.randomize = function() {
 
 PilotNet.prototype.mutate = function(spread) {
 	this.nnet.mutate(spread);
+
+	for(let i = 0; i < this.evoParams.length; ++i) {
+		this.evoParams[i] += 1 * spread * (gaussianRand() - 0.5);
+	}
 }
 
 PilotNet.prototype.toText = function() {
 	const serialObj = {
-		nnet: this.nnet.toText()
+		nnet: this.nnet.toText(),
+		evoParams: this.evoParams
 	};
 	return JSON.stringify(serialObj);
 }
@@ -61,6 +72,7 @@ PilotNet.prototype.toText = function() {
 PilotNet.prototype.fromText = function(text) {
 	const rawObject = JSON.parse(text);
 	this.nnet.fromText(rawObject.nnet);
+	this.evoParams = rawObject.evoParams;
 }
 
 /*
@@ -134,10 +146,12 @@ PilotNet.prototype.run = function( outputs, model ) {
 	outputs[1] = rot;
 
 	// FOV
+	const fovScale = Math.abs(this.evoParams[0]) + 1;
 	let fov = nnOutputs[5];
-	fov = outputScale(fov);
+	fov = Math.max(0, fov);
 	const minFov = 5;
 	const maxFov = 120;
-	fov = (maxFov - minFov) / 1000 * fov + minFov;
+	fov = (maxFov - minFov) / fovScale * fov + minFov;
+	fov = Math.min(maxFov, fov);
 	this.fov = fov;
 }
