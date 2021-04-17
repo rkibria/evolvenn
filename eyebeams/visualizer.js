@@ -237,7 +237,7 @@ Visualizer.prototype.draw = function(ctx, accel=null, rot=null) {
 			ctx.save();
 			for(let i = 0; i < this.pilotNet.nEyeBeams; ++i) {
 				const beam = this.pilotNet.beams[ i ];
-				if(beam.t >= 0) {
+				if(beam.t >= 0 && scale == 1) {
 					drawBeam(beam.dir, beam.t);
 					this._v1.copy(beam.dir).multiplyScalar(beam.t).add(this.model.rocket.pos);
 					ctx.save();
