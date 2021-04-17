@@ -33,7 +33,7 @@ function PilotNet( innerLayers ) {
 		this.beams.push( { dir: new Vec2(), t: 0 } );
 	}
 
-	this.evoParams = [ 0 ]; // fov scale
+	this.evoParams = [];
 }
 
 function makePilotNet() {
@@ -146,12 +146,6 @@ PilotNet.prototype.run = function( outputs, model ) {
 	outputs[1] = rot;
 
 	// FOV
-	const fovScale = Math.abs(this.evoParams[0]) + 1;
-	let fov = nnOutputs[5];
-	fov = Math.max(0, fov);
-	const minFov = 5;
-	const maxFov = 120;
-	fov = (maxFov - minFov) / fovScale * fov + minFov;
-	fov = Math.min(maxFov, fov);
-	this.fov = fov;
+	const fovBit = (outputScale(nnOutputs[5]) > bitThreshold);
+	this.fov = fovBit ? 5 : 10;
 }
