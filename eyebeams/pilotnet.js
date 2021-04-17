@@ -14,7 +14,8 @@ function PilotNet( innerLayers ) {
 	this.nInputs = this.nEyeBeams + 6;
 	// 2: accelBit0 & accelBit1 of accel
 	// 3: polarity, accelBit0 & accelBit1 of rot
-	const nOutputs = 5;
+	// 1: fov control
+	const nOutputs = 6;
 
 	this.inputs = new Array( this.nInputs ).fill( 0 );
 
@@ -98,6 +99,7 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 	this.inputs[ this.nEyeBeams + 5 ] = model.rocket.fuel / 100;
 
+	// RUN NN
 	const nnOutputs = this.nnet.run( this.inputs );
 
 	function outputScale(i) {
@@ -130,4 +132,12 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 	outputs[0] = accel;
 	outputs[1] = rot;
+
+	// FOV
+	let fov = nnOutputs[5];
+	fov = outputScale(fov);
+	const minFov = 5;
+	const maxFov = 120;
+	fov = (maxFov - minFov) / 1000 * fov + minFov;
+	this.fov = fov;
 }

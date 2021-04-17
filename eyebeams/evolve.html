@@ -33,6 +33,7 @@ body {
 
 <script src="../drawing.js"></script>
 <script src="../vec2.js"></script>
+<script src="../intersections.js"></script>
 <script src="../random.js"></script>
 <script src="../neurallayer.js"></script>
 <script src="../neuralnet.js"></script>
@@ -189,7 +190,7 @@ Individual.prototype.evaluate = function()
 ///////////////////////////////////////////////////////////
 const g_fitnessgraph = new FitnessGraph( 0, 0, canvas.width, 100 );
 
-g_visualizer = new Visualizer( null, 10, 10, 780 );
+g_visualizer = new Visualizer( null, null, 10, 10, 780 );
 
 function makePopulation() {
 	return new Population(g_pop_size, function() {return new Individual()});
