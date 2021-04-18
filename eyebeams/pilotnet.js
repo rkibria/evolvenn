@@ -6,16 +6,19 @@
 @param innerLayers Array of neuron counts for each hidden layer (without the output layer)
 */
 function PilotNet( innerLayers ) {
+	this.nFeedbacks = 4; // feeback connections from outputs to inputs of NN
+	this.feedbackVals = new Array( this.nFeedbacks ).fill( 0 );
+
 	this.nEyeBeams = 5;
 	// 2: velocity
 	// 2: direction
 	// 1: avl from model
 	// 1: fuel from model
-	this.nInputs = this.nEyeBeams + 6;
+	this.nInputs = this.nEyeBeams + 6 + this.nFeedbacks;
 	// 2: accelBit0 & accelBit1 of accel
 	// 3: polarity, accelBit0 & accelBit1 of rot
 	// 1: fov control
-	const nOutputs = 6;
+	const nOutputs = 6 + this.nFeedbacks;
 
 	this.inputs = new Array( this.nInputs ).fill( 0 );
 
@@ -111,6 +114,10 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 	this.inputs[ this.nEyeBeams + 5 ] = model.rocket.fuel / 100;
 
+	for( let i = 0; i < this.nFeedbacks; ++i ) {
+		this.inputs[ this.nEyeBeams + 6 + i ] = this.feedbackVals[ i ];
+	}
+
 	// RUN NN
 	const nnOutputs = this.nnet.run( this.inputs );
 
@@ -148,4 +155,14 @@ PilotNet.prototype.run = function( outputs, model ) {
 	// FOV
 	const fovBit = (outputScale(nnOutputs[5]) > bitThreshold);
 	this.fov = fovBit ? 30 : 5;
+
+	// FEEDBACKS
+	function feedbackScale(i) {
+		return (i >= 0 ? 1 : -1) * outputScale(Math.abs(i));
+	}
+
+	for( let i = 0; i < this.nFeedbacks; ++i ) {
+		this.feedbackVals[ i ] = feedbackScale( nnOutputs[ 6 + i ] );
+	}
+
 }
