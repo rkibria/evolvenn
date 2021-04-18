@@ -36,7 +36,9 @@ function PilotNet( innerLayers ) {
 		this.beams.push( { dir: new Vec2(), t: 0 } );
 	}
 
-	this.evoParams = [];
+	this.evoParams = [
+	10 // eye beam input scale
+	];
 }
 
 function makePilotNet() {
@@ -89,6 +91,7 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 	const startAngle = -this.fov / 2;
 	const incAngle = this.fov / (this.nEyeBeams - 1);
+	const distScale = this.evoParams[ 0 ];
 
 	for( j = 0; j < model.pods.length; ++j ) {
 		const podPos = model.pods[ j ];
@@ -99,7 +102,7 @@ PilotNet.prototype.run = function( outputs, model ) {
 			beam.t = nearestCircleLineIntersect(model.rocket.pos, beam.dir, podPos, model.POD_SIZE);
 			if(beam.t >= 0) {
 				const invDist = 10 * Math.max(0.1, 1 - beam.t / 1000);
-				this.inputs[ i ] += invDist;
+				this.inputs[ i ] += distScale * invDist;
 			}
 		}
 	}
