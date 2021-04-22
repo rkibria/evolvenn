@@ -6,7 +6,7 @@
 @param innerLayers Array of neuron counts for each hidden layer (without the output layer)
 */
 function PilotNet( innerLayers ) {
-	this.nFeedbacks = 4; // feeback connections from outputs to inputs of NN
+	this.nFeedbacks = 2; // feeback connections from outputs to inputs of NN
 	this.feedbackVals = new Array( this.nFeedbacks ).fill( 0 );
 
 	this.nEyeBeams = 5;
@@ -14,11 +14,12 @@ function PilotNet( innerLayers ) {
 	// 2: direction
 	// 1: avl from model
 	// 1: fuel from model
-	this.nInputs = this.nEyeBeams + 6 + this.nFeedbacks;
+	this.nSensorInputs = 6;
+	this.nInputs = this.nEyeBeams + this.nSensorInputs + this.nFeedbacks;
 	// 2: accelBit0 & accelBit1 of accel
 	// 3: polarity, accelBit0 & accelBit1 of rot
-	// 1: fov control
-	const nOutputs = 6 + this.nFeedbacks;
+	this.nControlOutputs = 5;
+	const nOutputs = this.nControlOutputs + this.nFeedbacks;
 
 	this.inputs = new Array( this.nInputs ).fill( 0 );
 
@@ -30,15 +31,12 @@ function PilotNet( innerLayers ) {
 
 	this._v1 = new Vec2();
 
-	this.fov = 5;
 	this.beams = [];
 	for(i = 0; i < this.nEyeBeams; ++i) {
 		this.beams.push( { dir: new Vec2(), t: 0 } );
 	}
 
-	this.evoParams = [
-	10 // eye beam input scale
-	];
+	this.evoParams = [];
 }
 
 function makePilotNet() {
@@ -89,9 +87,9 @@ PilotNet.prototype.run = function( outputs, model ) {
 		this.inputs[ i ] = 0;
 	}
 
-	const startAngle = -this.fov / 2;
-	const incAngle = this.fov / (this.nEyeBeams - 1);
-	const distScale = this.evoParams[ 0 ];
+	const fov = 10;
+	const startAngle = -fov / 2;
+	const incAngle = fov / (this.nEyeBeams - 1);
 
 	for( j = 0; j < model.pods.length; ++j ) {
 		const podPos = model.pods[ j ];
@@ -101,8 +99,8 @@ PilotNet.prototype.run = function( outputs, model ) {
 			beam.dir.copy(model.rocket.dir).rotate( Math.PI/180 * (startAngle + incAngle * i) );
 			beam.t = nearestCircleLineIntersect(model.rocket.pos, beam.dir, podPos, model.POD_SIZE);
 			if(beam.t >= 0) {
-				const invDist = 10 * Math.max(0.1, 1 - beam.t / 1000);
-				this.inputs[ i ] += distScale * invDist;
+				const invDist = 100 * (1 - beam.t / 1000);
+				this.inputs[ i ] += invDist;
 			}
 		}
 	}
@@ -118,7 +116,7 @@ PilotNet.prototype.run = function( outputs, model ) {
 	this.inputs[ this.nEyeBeams + 5 ] = model.rocket.fuel / 100;
 
 	for( let i = 0; i < this.nFeedbacks; ++i ) {
-		this.inputs[ this.nEyeBeams + 6 + i ] = this.feedbackVals[ i ];
+		this.inputs[ this.nEyeBeams + this.nSensorInputs + i ] = this.feedbackVals[ i ];
 	}
 
 	// RUN NN
@@ -155,17 +153,13 @@ PilotNet.prototype.run = function( outputs, model ) {
 	outputs[0] = accel;
 	outputs[1] = rot;
 
-	// FOV
-	const fovBit = (outputScale(nnOutputs[5]) > bitThreshold);
-	this.fov = fovBit ? 30 : 5;
-
 	// FEEDBACKS
-	function feedbackScale(i) {
-		return (i >= 0 ? 1 : -1) * outputScale(Math.abs(i));
+	function feedbackScale(prevValue, newValue) {
+		return newValue > 0 ? 1 : 0;
 	}
 
 	for( let i = 0; i < this.nFeedbacks; ++i ) {
-		this.feedbackVals[ i ] = feedbackScale( nnOutputs[ 6 + i ] );
+		this.feedbackVals[ i ] = feedbackScale( this.feedbackVals[ i ], nnOutputs[ this.nControlOutputs + i ] );
 	}
 
 }
