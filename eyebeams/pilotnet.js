@@ -98,8 +98,8 @@ PilotNet.prototype.run = function( outputs, model ) {
 			const beam = this.beams[ i ];
 			beam.dir.copy(model.rocket.dir).rotate( Math.PI/180 * (startAngle + incAngle * i) );
 			beam.t = nearestCircleLineIntersect(model.rocket.pos, beam.dir, podPos, model.POD_SIZE);
-			if(beam.t >= 0) {
-				const invDist = 100 * (1 - beam.t / 1000);
+			if(beam.t >= 0 && beam.t <= 1000) {
+				const invDist = 50 + 50 * (1 - beam.t / 1000);
 				this.inputs[ i ] += invDist;
 			}
 		}
