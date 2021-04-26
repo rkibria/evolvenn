@@ -6,7 +6,7 @@
 @param innerLayers Array of neuron counts for each hidden layer (without the output layer)
 */
 function PilotNet( innerLayers ) {
-	this.nFeedbacks = 2; // feeback connections from outputs to inputs of NN
+	this.nFeedbacks = 5; // feeback connections from outputs to inputs of NN
 	this.feedbackVals = new Array( this.nFeedbacks ).fill( 0 );
 
 	this.nEyeBeams = 5;
@@ -98,8 +98,8 @@ PilotNet.prototype.run = function( outputs, model ) {
 			const beam = this.beams[ i ];
 			beam.dir.copy(model.rocket.dir).rotate( Math.PI/180 * (startAngle + incAngle * i) );
 			beam.t = nearestCircleLineIntersect(model.rocket.pos, beam.dir, podPos, model.POD_SIZE);
-			if(beam.t >= 0 && beam.t <= 1000) {
-				const invDist = 50 + 50 * (1 - beam.t / 1000);
+			if(beam.t >= 0 && beam.t <= 2000) {
+				const invDist = 5 + 5 * (1 - beam.t / 2000);
 				this.inputs[ i ] += invDist;
 			}
 		}
