@@ -155,7 +155,7 @@ PilotNet.prototype.run = function( outputs, model ) {
 
 	// FEEDBACKS
 	function feedbackScale(prevValue, newValue) {
-		return newValue > 0 ? 1 : 0;
+		return Math.min(1, Math.max(0, newValue));
 	}
 
 	for( let i = 0; i < this.nFeedbacks; ++i ) {
