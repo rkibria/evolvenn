@@ -40,7 +40,7 @@ function PilotNet( innerLayers ) {
 }
 
 function makePilotNet() {
-	return new PilotNet( [ 13, 13, 13 ] );
+	return new PilotNet( [ 16, 16, 16 ] );
 }
 
 PilotNet.prototype.copy = function(other) {
